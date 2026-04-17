@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Probability Lab</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="header-copy">
+        <p class="kicker">Probability Lab</p>
+        <h1>Run a chance experiment, then compare what happened with what should happen over time.</h1>
+        <p>
+          Toss coins, spin color wheels, and roll one or two dice. Keep a tally, clear it, and try
+          a larger sample.
+        </p>
+      </div>
+      <svg class="header-art" viewBox="0 0 360 180" role="img" aria-label="A coin, spinner, and die">
+        <defs>
+          <linearGradient id="coinGradient" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#ffe08a"></stop>
+            <stop offset="1" stop-color="#e0a400"></stop>
+          </linearGradient>
+        </defs>
+        <circle cx="75" cy="92" r="46" fill="url(#coinGradient)" stroke="#8a6500" stroke-width="5"></circle>
+        <circle cx="75" cy="92" r="32" fill="none" stroke="#fff4c0" stroke-width="4"></circle>
+        <text x="75" y="101" text-anchor="middle" font-size="28" font-weight="800" fill="#5c4300">H</text>
+        <g transform="translate(176 90)">
+          <path d="M0 0 L0 -55 A55 55 0 0 1 55 0 Z" fill="#d62828"></path>
+          <path d="M0 0 L55 0 A55 55 0 0 1 0 55 Z" fill="#f4d35e"></path>
+          <path d="M0 0 L0 55 A55 55 0 0 1 -55 0 Z" fill="#007f5f"></path>
+          <path d="M0 0 L-55 0 A55 55 0 0 1 0 -55 Z" fill="#0096c7"></path>
+          <circle r="55" fill="none" stroke="#17211f" stroke-width="5"></circle>
+          <line x1="0" y1="0" x2="0" y2="-61" stroke="#17211f" stroke-width="5" stroke-linecap="round"></line>
+          <circle r="8" fill="#17211f"></circle>
+        </g>
+        <g transform="translate(276 48)">
+          <rect x="0" y="0" width="88" height="88" rx="8" fill="#ffffff" stroke="#17211f" stroke-width="5"></rect>
+          <circle cx="24" cy="24" r="7" fill="#17211f"></circle>
+          <circle cx="64" cy="24" r="7" fill="#17211f"></circle>
+          <circle cx="24" cy="64" r="7" fill="#17211f"></circle>
+          <circle cx="64" cy="64" r="7" fill="#17211f"></circle>
+        </g>
+      </svg>
+    </header>
+
+    <main>
+      <nav class="activity-tabs" aria-label="Choose an activity">
+        <button class="tab-button active" type="button" data-activity="coin" aria-pressed="true">Coin Toss</button>
+        <button class="tab-button" type="button" data-activity="experimental" aria-pressed="false">Experimental Probability</button>
+      </nav>
+
+      <section id="coin-activity" class="activity-section active" aria-labelledby="coin-title">
+        <div class="section-heading">
+          <p class="kicker">Coin Toss</p>
+          <h2 id="coin-title">Heads or tails, one batch at a time.</h2>
+        </div>
+
+        <div class="experiment-grid">
+          <div class="control-panel">
+            <label for="coin-count">Number of Tosses</label>
+            <div class="inline-action">
+              <input id="coin-count" type="number" min="1" max="10000" step="1" value="10">
+              <button id="coin-toss-button" class="primary-button" type="button">Toss 'em!</button>
+            </div>
+            <button id="coin-clear-button" class="quiet-button" type="button">Clear Results</button>
+
+            <div class="view-toggle" role="group" aria-label="Coin output view">
+              <button class="chip active" type="button" data-coin-view="list" aria-pressed="true">List</button>
+              <button class="chip" type="button" data-coin-view="table" aria-pressed="false">Table</button>
+              <button class="chip" type="button" data-coin-view="ratios" aria-pressed="false">Ratios</button>
+            </div>
+          </div>
+
+          <div class="coin-stage" aria-live="polite">
+            <div id="coin-visual" class="coin-visual heads">
+              <span id="coin-face">H</span>
+            </div>
+            <p id="coin-status">Ready for the first toss.</p>
+            <div class="mini-stats">
+              <span><strong id="coin-total">0</strong> tosses</span>
+              <span><strong id="coin-heads">0</strong> heads</span>
+              <span><strong id="coin-tails">0</strong> tails</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="output-panel">
+          <div class="output-heading">
+            <h3>Results</h3>
+            <p id="coin-summary">No tosses yet.</p>
+          </div>
+          <div id="coin-output"></div>
+        </div>
+      </section>
+
+      <section id="experimental-activity" class="activity-section" aria-labelledby="experimental-title">
+        <div class="section-heading">
+          <p class="kicker">Experimental Probability</p>
+          <h2 id="experimental-title">Try a spinner, adjust your own, or roll dice.</h2>
+        </div>
+
+        <nav class="mode-tabs" aria-label="Choose a probability device">
+          <button class="mode-button active" type="button" data-mode="preset" aria-pressed="true">Preset Spinner</button>
+          <button class="mode-button" type="button" data-mode="custom" aria-pressed="false">Make Spinner</button>
+          <button class="mode-button" type="button" data-mode="dice" aria-pressed="false">Dice</button>
+        </nav>
+
+        <section id="preset-mode" class="mode-panel active" aria-labelledby="preset-title">
+          <div class="experiment-grid">
+            <div class="control-panel">
+              <h3 id="preset-title">Four Equal Colors</h3>
+              <p class="helper-text">Red, yellow, green, and blue each start with a theoretical relative frequency of 0.25.</p>
+              <div class="button-row">
+                <button id="preset-new-spinner" class="quiet-button" type="button">New Spinner</button>
+                <button id="preset-clear" class="quiet-button" type="button">Clear Tally</button>
+              </div>
+
+              <fieldset class="segmented-field">
+                <legend>Number of Spins</legend>
+                <label><input type="radio" name="preset-spin-count" value="1" checked> 1</label>
+                <label><input type="radio" name="preset-spin-count" value="5"> 5</label>
+                <label><input type="radio" name="preset-spin-count" value="10"> 10</label>
+              </fieldset>
+
+              <button id="preset-spin" class="primary-button full-width" type="button">Spin</button>
+            </div>
+            <div class="spinner-stage">
+              <div class="spinner-wrap">
+                <svg id="preset-spinner-svg" class="spinner-svg" viewBox="0 0 220 220" role="img" aria-label="Four color spinner"></svg>
+                <div class="spinner-pointer" aria-hidden="true"></div>
+              </div>
+              <p id="preset-last-result" aria-live="polite">Ready to spin.</p>
+            </div>
+          </div>
+          <div class="output-panel">
+            <div class="output-heading">
+              <h3>Tally</h3>
+              <p id="preset-total-label">0 spins</p>
+            </div>
+            <div id="preset-tally"></div>
+          </div>
+        </section>
+
+        <section id="custom-mode" class="mode-panel" aria-labelledby="custom-title">
+          <div class="experiment-grid">
+            <div class="control-panel">
+              <h3 id="custom-title">Make Your Own Spinner</h3>
+              <p class="helper-text">Use up to 12 slices. A slice with twice the weight should land about twice as often.</p>
+
+              <fieldset class="segmented-field">
+                <legend>Number of Spins</legend>
+                <label><input type="radio" name="custom-spin-count" value="1" checked> 1</label>
+                <label><input type="radio" name="custom-spin-count" value="5"> 5</label>
+                <label><input type="radio" name="custom-spin-count" value="10"> 10</label>
+              </fieldset>
+
+              <div class="button-row">
+                <button id="custom-spin" class="primary-button" type="button">Spin</button>
+                <button id="custom-clear" class="quiet-button" type="button">Clear Tally</button>
+              </div>
+              <div class="button-row">
+                <select id="custom-color-select" aria-label="Color to add or remove">
+                  <option value="Red">Red</option>
+                  <option value="Yellow">Yellow</option>
+                  <option value="Green">Green</option>
+                  <option value="Blue">Blue</option>
+                </select>
+                <button id="custom-add" class="quiet-button" type="button">+</button>
+                <button id="custom-remove" class="quiet-button" type="button">-</button>
+              </div>
+            </div>
+            <div class="spinner-stage">
+              <div class="spinner-wrap">
+                <svg id="custom-spinner-svg" class="spinner-svg" viewBox="0 0 220 220" role="img" aria-label="Custom spinner"></svg>
+                <div class="spinner-pointer" aria-hidden="true"></div>
+              </div>
+              <p id="custom-last-result" aria-live="polite">Ready to spin.</p>
+            </div>
+          </div>
+
+          <div class="output-panel">
+            <div class="output-heading">
+              <h3>Slices</h3>
+              <p id="custom-slice-count">4 slices</p>
+            </div>
+            <div id="custom-slice-editor"></div>
+          </div>
+
+          <div class="output-panel">
+            <div class="output-heading">
+              <h3>Tally</h3>
+              <p id="custom-total-label">0 spins</p>
+            </div>
+            <div id="custom-tally"></div>
+          </div>
+        </section>
+
+        <section id="dice-mode" class="mode-panel" aria-labelledby="dice-title">
+          <div class="experiment-grid">
+            <div class="control-panel">
+              <h3 id="dice-title">Roll Dice</h3>
+              <fieldset class="segmented-field">
+                <legend>Dice</legend>
+                <label><input type="radio" name="dice-count" value="1"> 1 die</label>
+                <label><input type="radio" name="dice-count" value="2" checked> 2 dice</label>
+              </fieldset>
+
+              <fieldset class="segmented-field">
+                <legend>Number of Rolls</legend>
+                <label><input type="radio" name="dice-roll-count" value="1" checked> 1</label>
+                <label><input type="radio" name="dice-roll-count" value="5"> 5</label>
+                <label><input type="radio" name="dice-roll-count" value="10"> 10</label>
+              </fieldset>
+
+              <div class="button-row">
+                <button id="dice-roll" class="primary-button" type="button">Roll Dice</button>
+                <button id="dice-clear" class="quiet-button" type="button">Clear Tally</button>
+              </div>
+              <div class="button-row">
+                <button id="dice-new" class="quiet-button" type="button">New Dice</button>
+                <button id="dice-make" class="quiet-button" type="button" aria-expanded="false">Make Dice</button>
+              </div>
+            </div>
+
+            <div class="dice-stage">
+              <div id="dice-visuals" class="dice-visuals" aria-live="polite"></div>
+              <p id="dice-last-result">Ready to roll.</p>
+            </div>
+          </div>
+
+          <div id="dice-editor-panel" class="output-panel hidden">
+            <div class="output-heading">
+              <h3>Dice Faces</h3>
+              <p>Use the same six faces on every die.</p>
+            </div>
+            <div id="dice-face-editor" class="face-editor"></div>
+          </div>
+
+          <div class="output-panel">
+            <div class="output-heading">
+              <h3>Tally</h3>
+              <p id="dice-total-label">0 rolls</p>
+            </div>
+            <div id="dice-tally"></div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      Built for classroom experiments with theoretical and experimental probability.
+    </footer>
+
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
