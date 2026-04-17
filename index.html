@@ -12,7 +12,7 @@
         <p class="kicker">Probability Lab</p>
         <h1>Run a chance experiment, then compare what happened with what should happen over time.</h1>
         <p>
-          Toss coins, spin color wheels, and roll one or two dice. Keep a tally, clear it, and try
+          Toss coins, spin color wheels, and roll one or two dice. Track results, clear them, and try
           a larger sample.
         </p>
       </div>
@@ -111,10 +111,12 @@
           <div class="experiment-grid">
             <div class="control-panel">
               <h3 id="preset-title">Four Equal Colors</h3>
-              <p class="helper-text">Red, yellow, green, and blue each start with a theoretical relative frequency of 0.25.</p>
+              <p id="preset-description" class="helper-text">Red, yellow, green, and blue each have relative frequency 0.25.</p>
+              <label for="preset-select">Preset Spinner</label>
+              <select id="preset-select"></select>
               <div class="button-row">
                 <button id="preset-new-spinner" class="quiet-button" type="button">New Spinner</button>
-                <button id="preset-clear" class="quiet-button" type="button">Clear Tally</button>
+                <button id="preset-clear" class="quiet-button" type="button">Clear Results</button>
               </div>
 
               <fieldset class="segmented-field">
@@ -122,7 +124,14 @@
                 <label><input type="radio" name="preset-spin-count" value="1" checked> 1</label>
                 <label><input type="radio" name="preset-spin-count" value="5"> 5</label>
                 <label><input type="radio" name="preset-spin-count" value="10"> 10</label>
+                <label><input type="radio" name="preset-spin-count" value="25"> 25</label>
+                <label><input type="radio" name="preset-spin-count" value="50"> 50</label>
+                <label><input type="radio" name="preset-spin-count" value="100"> 100</label>
+                <label><input type="radio" name="preset-spin-count" value="1000"> 1000</label>
+                <label><input type="radio" name="preset-spin-count" value="custom"> Custom</label>
               </fieldset>
+              <label class="custom-count-label" for="preset-custom-count">Custom Spins</label>
+              <input id="preset-custom-count" type="number" min="1" max="10000" step="1" value="250">
 
               <button id="preset-spin" class="primary-button full-width" type="button">Spin</button>
             </div>
@@ -135,9 +144,19 @@
             </div>
           </div>
           <div class="output-panel">
-            <div class="output-heading">
-              <h3>Tally</h3>
-              <p id="preset-total-label">0 spins</p>
+            <div class="output-heading output-heading-with-controls">
+              <div>
+                <h3>Results</h3>
+                <p id="preset-total-label">0 spins</p>
+              </div>
+              <div class="output-controls">
+                <label for="preset-output-view">Show</label>
+                <select id="preset-output-view">
+                  <option value="count">Count</option>
+                  <option value="relative">Rel Freq</option>
+                </select>
+                <button id="preset-theoretical-toggle" class="quiet-button" type="button" aria-pressed="false">Show Theoretical</button>
+              </div>
             </div>
             <div id="preset-tally"></div>
           </div>
@@ -154,18 +173,34 @@
                 <label><input type="radio" name="custom-spin-count" value="1" checked> 1</label>
                 <label><input type="radio" name="custom-spin-count" value="5"> 5</label>
                 <label><input type="radio" name="custom-spin-count" value="10"> 10</label>
+                <label><input type="radio" name="custom-spin-count" value="25"> 25</label>
+                <label><input type="radio" name="custom-spin-count" value="50"> 50</label>
+                <label><input type="radio" name="custom-spin-count" value="100"> 100</label>
+                <label><input type="radio" name="custom-spin-count" value="custom"> Custom</label>
               </fieldset>
+              <label class="custom-count-label" for="custom-custom-count">Custom Spins</label>
+              <input id="custom-custom-count" type="number" min="1" max="10000" step="1" value="250">
 
               <div class="button-row">
                 <button id="custom-spin" class="primary-button" type="button">Spin</button>
-                <button id="custom-clear" class="quiet-button" type="button">Clear Tally</button>
+                <button id="custom-clear" class="quiet-button" type="button">Clear Results</button>
+              </div>
+              <div class="split-control">
+                <label for="custom-split-select">Split Spinner Into</label>
+                <div class="button-row">
+                  <select id="custom-split-select"></select>
+                  <button id="custom-apply-split" class="quiet-button" type="button">Apply Split</button>
+                </div>
               </div>
               <div class="button-row">
                 <select id="custom-color-select" aria-label="Color to add or remove">
                   <option value="Red">Red</option>
+                  <option value="Orange">Orange</option>
                   <option value="Yellow">Yellow</option>
                   <option value="Green">Green</option>
                   <option value="Blue">Blue</option>
+                  <option value="Purple">Purple</option>
+                  <option value="Pink">Pink</option>
                 </select>
                 <button id="custom-add" class="quiet-button" type="button">+</button>
                 <button id="custom-remove" class="quiet-button" type="button">-</button>
@@ -182,16 +217,26 @@
 
           <div class="output-panel">
             <div class="output-heading">
-              <h3>Slices</h3>
+              <h3>Slice Setup</h3>
               <p id="custom-slice-count">4 slices</p>
             </div>
             <div id="custom-slice-editor"></div>
           </div>
 
           <div class="output-panel">
-            <div class="output-heading">
-              <h3>Tally</h3>
-              <p id="custom-total-label">0 spins</p>
+            <div class="output-heading output-heading-with-controls">
+              <div>
+                <h3>Results</h3>
+                <p id="custom-total-label">0 spins</p>
+              </div>
+              <div class="output-controls">
+                <label for="custom-output-view">Show</label>
+                <select id="custom-output-view">
+                  <option value="count">Count</option>
+                  <option value="relative">Rel Freq</option>
+                </select>
+                <button id="custom-theoretical-toggle" class="quiet-button" type="button" aria-pressed="false">Show Theoretical</button>
+              </div>
             </div>
             <div id="custom-tally"></div>
           </div>
@@ -216,7 +261,7 @@
 
               <div class="button-row">
                 <button id="dice-roll" class="primary-button" type="button">Roll Dice</button>
-                <button id="dice-clear" class="quiet-button" type="button">Clear Tally</button>
+                <button id="dice-clear" class="quiet-button" type="button">Clear Results</button>
               </div>
               <div class="button-row">
                 <button id="dice-new" class="quiet-button" type="button">New Dice</button>
@@ -239,9 +284,19 @@
           </div>
 
           <div class="output-panel">
-            <div class="output-heading">
-              <h3>Tally</h3>
-              <p id="dice-total-label">0 rolls</p>
+            <div class="output-heading output-heading-with-controls">
+              <div>
+                <h3>Results</h3>
+                <p id="dice-total-label">0 rolls</p>
+              </div>
+              <div class="output-controls">
+                <label for="dice-output-view">Show</label>
+                <select id="dice-output-view">
+                  <option value="count">Count</option>
+                  <option value="relative">Rel Freq</option>
+                </select>
+                <button id="dice-theoretical-toggle" class="quiet-button" type="button" aria-pressed="false">Show Theoretical</button>
+              </div>
             </div>
             <div id="dice-tally"></div>
           </div>
@@ -253,6 +308,6 @@
       Built for classroom experiments with theoretical and experimental probability.
     </footer>
 
-    <script src="app.js" type="module"></script>
+    <script src="app.js"></script>
   </body>
 </html>

@@ -1,9 +1,98 @@
 const COLORS = {
   Red: "#d62828",
+  Orange: "#f77f00",
   Yellow: "#f4d35e",
   Green: "#007f5f",
   Blue: "#0096c7",
+  Purple: "#7b2cbf",
+  Pink: "#ff8fab",
 };
+
+const COLOR_ORDER = ["Red", "Orange", "Yellow", "Green", "Blue", "Purple", "Pink"];
+const SPINNER_SPLITS = [2, 3, 4, 5, 6, 8, 10, 12];
+const MAX_TRIALS = 10000;
+
+const SPINNER_PRESETS = [
+  {
+    id: "four-equal",
+    name: "Four Equal Colors",
+    description: "Red, yellow, green, and blue each have relative frequency 0.25.",
+    slices: [
+      { label: "Red", weight: 1 },
+      { label: "Yellow", weight: 1 },
+      { label: "Green", weight: 1 },
+      { label: "Blue", weight: 1 },
+    ],
+  },
+  {
+    id: "red-blue-halves",
+    name: "Red / Blue Halves",
+    description: "Two equal sections: red and blue.",
+    slices: [
+      { label: "Red", weight: 1 },
+      { label: "Blue", weight: 1 },
+    ],
+  },
+  {
+    id: "red-red-blue-thirds",
+    name: "Two-Thirds Red",
+    description: "Red covers 2/3 of the spinner and blue covers 1/3.",
+    slices: [
+      { label: "Red", weight: 2 },
+      { label: "Blue", weight: 1 },
+    ],
+  },
+  {
+    id: "alternating-quarters",
+    name: "Alternating Red / Blue",
+    description: "Four equal sections alternating red and blue.",
+    slices: [
+      { label: "Red", weight: 1 },
+      { label: "Blue", weight: 1 },
+      { label: "Red", weight: 1 },
+      { label: "Blue", weight: 1 },
+    ],
+  },
+  {
+    id: "three-equal",
+    name: "Red / Blue / Yellow",
+    description: "Three equal sections: red, blue, and yellow.",
+    slices: [
+      { label: "Red", weight: 1 },
+      { label: "Blue", weight: 1 },
+      { label: "Yellow", weight: 1 },
+    ],
+  },
+  {
+    id: "six-mixed",
+    name: "Six Equal Sections",
+    description: "Six equal sections with red, blue, yellow, and green.",
+    slices: [
+      { label: "Red", weight: 1 },
+      { label: "Blue", weight: 1 },
+      { label: "Yellow", weight: 1 },
+      { label: "Red", weight: 1 },
+      { label: "Green", weight: 1 },
+      { label: "Yellow", weight: 1 },
+    ],
+  },
+  {
+    id: "unequal-three",
+    name: "Unequal Three Colors",
+    description: "Blue is 1/2, red is 1/3, and yellow is 1/6.",
+    slices: [
+      { label: "Blue", weight: 3 },
+      { label: "Red", weight: 2 },
+      { label: "Yellow", weight: 1 },
+    ],
+  },
+  {
+    id: "roygbpp",
+    name: "ROYGB + Purple + Pink",
+    description: "Seven equal color sections.",
+    slices: COLOR_ORDER.map((label) => ({ label, weight: 1 })),
+  },
+];
 
 const state = {
   activity: "coin",
@@ -14,24 +103,19 @@ const state = {
   experimental: {
     mode: "preset",
     preset: {
-      slices: [
-        { label: "Red", color: COLORS.Red, weight: 1 },
-        { label: "Yellow", color: COLORS.Yellow, weight: 1 },
-        { label: "Green", color: COLORS.Green, weight: 1 },
-        { label: "Blue", color: COLORS.Blue, weight: 1 },
-      ],
+      presetId: "four-equal",
+      slices: makePresetSlices("four-equal"),
       results: [],
       rotation: 0,
+      outputView: "count",
+      showTheoretical: false,
     },
     custom: {
-      slices: [
-        { label: "Red", color: COLORS.Red, weight: 3 },
-        { label: "Yellow", color: COLORS.Yellow, weight: 3 },
-        { label: "Green", color: COLORS.Green, weight: 3 },
-        { label: "Blue", color: COLORS.Blue, weight: 3 },
-      ],
+      slices: makeEqualSlices(4),
       results: [],
       rotation: 0,
+      outputView: "count",
+      showTheoretical: false,
     },
     dice: {
       count: 2,
@@ -39,6 +123,8 @@ const state = {
       results: [],
       lastFaces: ["1", "1"],
       editorOpen: false,
+      outputView: "count",
+      showTheoretical: false,
     },
   },
 };
@@ -49,6 +135,27 @@ const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 const formatDecimal = (value) => Number.isFinite(value) ? value.toFixed(3).replace(/0+$/, "").replace(/\.$/, "") : "0";
 const percent = (value) => `${(value * 100).toFixed(1)}%`;
 
+function makeSlice(label, weight = 1) {
+  return {
+    label,
+    color: COLORS[label] || COLORS.Blue,
+    weight,
+  };
+}
+
+function makeEqualSlices(count) {
+  return Array.from({ length: count }, (_, index) => makeSlice(COLOR_ORDER[index % COLOR_ORDER.length], 1));
+}
+
+function makePresetSlices(presetId) {
+  const preset = SPINNER_PRESETS.find((item) => item.id === presetId) || SPINNER_PRESETS[0];
+  return preset.slices.map((slice) => makeSlice(slice.label, slice.weight));
+}
+
+function getPreset(presetId) {
+  return SPINNER_PRESETS.find((preset) => preset.id === presetId) || SPINNER_PRESETS[0];
+}
+
 function randomItem(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
@@ -56,6 +163,18 @@ function randomItem(items) {
 function getRadioValue(name) {
   const checked = document.querySelector(`input[name="${name}"]:checked`);
   return checked ? Number(checked.value) : 1;
+}
+
+function getTrialCount(name, customSelector) {
+  const checked = document.querySelector(`input[name="${name}"]:checked`);
+  if (!checked) return 1;
+  if (checked.value !== "custom") return Number(checked.value);
+
+  const input = $(customSelector);
+  const value = Math.floor(Number(input.value) || 1);
+  const clamped = Math.min(Math.max(value, 1), MAX_TRIALS);
+  input.value = clamped;
+  return clamped;
 }
 
 function countBy(items) {
@@ -94,7 +213,7 @@ function renderMode() {
 
 function tossCoins() {
   const requested = Number($("#coin-count").value);
-  const tossCount = Math.min(Math.max(Math.floor(requested || 1), 1), 10000);
+  const tossCount = Math.min(Math.max(Math.floor(requested || 1), 1), MAX_TRIALS);
   $("#coin-count").value = tossCount;
 
   const newTosses = Array.from({ length: tossCount }, () => randomItem(["Heads", "Tails"]));
@@ -205,11 +324,12 @@ function drawSpinner(svg, slices, rotation = 0) {
   svg.style.transform = `rotate(${rotation}deg)`;
   svg.innerHTML = slices.map((slice) => {
     const angle = total ? (slice.weight / total) * 360 : 0;
+    const textColor = getReadableTextColor(slice.color);
     if (angle >= 359.999) {
       return `
         <circle cx="${cx}" cy="${cy}" r="${radius}" fill="${slice.color}" stroke="#17211f" stroke-width="5"></circle>
         <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle"
-          fill="${slice.label === "Yellow" ? "#17211f" : "#ffffff"}" font-size="18" font-weight="800">${slice.label}</text>
+          fill="${textColor}" font-size="18" font-weight="800">${escapeHtml(shortSpinnerLabel(slice.label))}</text>
       `;
     }
     const end = start + angle;
@@ -221,12 +341,30 @@ function drawSpinner(svg, slices, rotation = 0) {
     return `
       <path d="${path}" fill="${slice.color}" stroke="#17211f" stroke-width="2"></path>
       <text x="${labelPoint.x}" y="${labelPoint.y}" text-anchor="middle" dominant-baseline="middle"
-        fill="${slice.label === "Yellow" ? "#17211f" : "#ffffff"}" font-size="14" font-weight="800">${slice.label}</text>
+        fill="${textColor}" font-size="14" font-weight="800">${escapeHtml(shortSpinnerLabel(slice.label))}</text>
     `;
   }).join("") + `
     <circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="#17211f" stroke-width="5"></circle>
     <circle cx="${cx}" cy="${cy}" r="9" fill="#17211f"></circle>
   `;
+}
+
+function shortSpinnerLabel(label) {
+  const labels = {
+    Orange: "Org",
+    Purple: "Purp",
+    Yellow: "Yel",
+  };
+  return labels[label] || label;
+}
+
+function getReadableTextColor(hexColor) {
+  const hex = hexColor.replace("#", "");
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.58 ? "#17211f" : "#ffffff";
 }
 
 function polarToCartesian(cx, cy, radius, angleDegrees) {
@@ -262,7 +400,7 @@ function weightedSpin(slices) {
 }
 
 function spinPreset() {
-  const count = getRadioValue("preset-spin-count");
+  const count = getTrialCount("preset-spin-count", "#preset-custom-count");
   const results = spinMany(state.experimental.preset.slices, count);
   state.experimental.preset.results.push(...results);
   state.experimental.preset.rotation += 720 + Math.random() * 720;
@@ -271,7 +409,7 @@ function spinPreset() {
 }
 
 function spinCustom() {
-  const count = getRadioValue("custom-spin-count");
+  const count = getTrialCount("custom-spin-count", "#custom-custom-count");
   const results = spinMany(state.experimental.custom.slices, count);
   state.experimental.custom.results.push(...results);
   state.experimental.custom.rotation += 720 + Math.random() * 720;
@@ -290,20 +428,25 @@ function clearPreset() {
 }
 
 function resetPresetSpinner() {
-  state.experimental.preset.slices = [
-    { label: "Red", color: COLORS.Red, weight: 1 },
-    { label: "Yellow", color: COLORS.Yellow, weight: 1 },
-    { label: "Green", color: COLORS.Green, weight: 1 },
-    { label: "Blue", color: COLORS.Blue, weight: 1 },
-  ];
-  clearPreset();
+  const presetId = $("#preset-select").value || state.experimental.preset.presetId;
+  state.experimental.preset.presetId = presetId;
+  state.experimental.preset.slices = makePresetSlices(presetId);
+  state.experimental.preset.results = [];
+  state.experimental.preset.rotation = 0;
+  $("#preset-last-result").textContent = "Ready to spin.";
+  renderPreset();
 }
 
 function renderPreset() {
   const preset = state.experimental.preset;
+  const presetDefinition = getPreset(preset.presetId);
+  $("#preset-title").textContent = presetDefinition.name;
+  $("#preset-description").textContent = presetDefinition.description;
+  $("#preset-select").value = preset.presetId;
   drawSpinner($("#preset-spinner-svg"), preset.slices, preset.rotation);
   $("#preset-total-label").textContent = `${preset.results.length} ${preset.results.length === 1 ? "spin" : "spins"}`;
-  $("#preset-tally").innerHTML = renderTallyTable(preset.results, preset.slices);
+  renderOutputControls("preset", preset);
+  $("#preset-tally").innerHTML = renderOutcomeTable(preset.results, summarizeSlices(preset.slices), preset, "Run the experiment to collect data.");
 }
 
 function addCustomSlice() {
@@ -316,7 +459,7 @@ function addCustomSlice() {
   const label = $("#custom-color-select").value;
   slices.push({ label, color: COLORS[label], weight: 1 });
   state.experimental.custom.results = [];
-  $("#custom-last-result").textContent = "Spinner changed; tally cleared.";
+  $("#custom-last-result").textContent = "Spinner changed; results cleared.";
   renderCustom();
 }
 
@@ -336,7 +479,7 @@ function removeCustomSlice() {
 
   slices.splice(index, 1);
   state.experimental.custom.results = [];
-  $("#custom-last-result").textContent = "Spinner changed; tally cleared.";
+  $("#custom-last-result").textContent = "Spinner changed; results cleared.";
   renderCustom();
 }
 
@@ -347,13 +490,22 @@ function updateCustomSlice(index, updates) {
     ...updates,
   };
   state.experimental.custom.results = [];
-  $("#custom-last-result").textContent = "Spinner changed; tally cleared.";
+  $("#custom-last-result").textContent = "Spinner changed; results cleared.";
   renderCustom();
 }
 
 function clearCustom() {
   state.experimental.custom.results = [];
   $("#custom-last-result").textContent = "Ready to spin.";
+  renderCustom();
+}
+
+function applyCustomSplit() {
+  const count = Number($("#custom-split-select").value) || 4;
+  state.experimental.custom.slices = makeEqualSlices(count);
+  state.experimental.custom.results = [];
+  state.experimental.custom.rotation = 0;
+  $("#custom-last-result").textContent = `Spinner split into ${count} equal ${count === 1 ? "slice" : "slices"}.`;
   renderCustom();
 }
 
@@ -369,7 +521,7 @@ function renderCustom() {
           <label class="swatch-label">
             <span class="swatch" style="background: ${slice.color}"></span>
             <select data-slice-label="${index}" aria-label="Color for slice ${index + 1}">
-              ${Object.keys(COLORS).map((label) => `
+              ${COLOR_ORDER.map((label) => `
                 <option value="${label}" ${label === slice.label ? "selected" : ""}>${label}</option>
               `).join("")}
             </select>
@@ -383,7 +535,8 @@ function renderCustom() {
       `).join("")}
     </div>
   `;
-  $("#custom-tally").innerHTML = renderTallyTable(custom.results, summarizeSlices(custom.slices));
+  renderOutputControls("custom", custom);
+  $("#custom-tally").innerHTML = renderOutcomeTable(custom.results, summarizeSlices(custom.slices), custom, "Run the experiment to collect data.");
 }
 
 function summarizeSlices(slices) {
@@ -396,46 +549,51 @@ function summarizeSlices(slices) {
   return Array.from(summary.values());
 }
 
-function renderTallyTable(results, outcomes) {
+function renderOutputControls(prefix, settings) {
+  const viewSelect = $(`#${prefix}-output-view`);
+  const theoreticalButton = $(`#${prefix}-theoretical-toggle`);
+  if (!viewSelect || !theoreticalButton) return;
+
+  viewSelect.value = settings.outputView;
+  theoreticalButton.setAttribute("aria-pressed", String(settings.showTheoretical));
+  theoreticalButton.textContent = settings.showTheoretical ? "Hide Theoretical" : "Show Theoretical";
+  theoreticalButton.classList.toggle("active", settings.showTheoretical);
+}
+
+function renderOutcomeTable(results, outcomes, settings, emptyMessage) {
   if (!results.length) {
-    return makeEmpty("Run the experiment to collect data.");
+    return makeEmpty(emptyMessage);
   }
 
   const counts = countBy(results);
   const total = results.length;
-  const totalWeight = outcomes.reduce((sum, item) => sum + item.weight, 0);
-  const rows = outcomes.map((outcome) => {
+  const rows = normalizeOutcomes(outcomes).map((outcome) => {
     const count = counts.get(outcome.label) || 0;
     const observed = total ? count / total : 0;
-    const theoretical = totalWeight ? outcome.weight / totalWeight : 0;
     return {
       ...outcome,
       count,
       observed,
-      theoretical,
     };
   });
+  const resultHeader = settings.outputView === "relative" ? "Relative Frequency" : "Count";
 
   return `
     <div class="table-wrap">
-      <table class="tally-table">
+      <table class="results-table">
         <thead>
           <tr>
             <th>Outcome</th>
-            <th>Tally</th>
-            <th>Count</th>
-            <th>Relative Frequency</th>
-            <th>Theoretical</th>
+            <th>${resultHeader}</th>
+            ${settings.showTheoretical ? "<th>Theoretical</th>" : ""}
           </tr>
         </thead>
         <tbody>
           ${rows.map((row) => `
             <tr>
-              <td><span class="swatch" style="display:inline-block; background:${row.color}"></span> ${row.label}</td>
-              <td class="tally-marks">${makeTally(row.count)}</td>
-              <td>${row.count}</td>
-              <td>${formatDecimal(row.observed)} (${percent(row.observed)})</td>
-              <td>${formatDecimal(row.theoretical)} (${percent(row.theoretical)})</td>
+              <td>${renderOutcomeLabel(row)}</td>
+              <td>${settings.outputView === "relative" ? `${formatDecimal(row.observed)} (${percent(row.observed)})` : row.count}</td>
+              ${settings.showTheoretical ? `<td>${formatDecimal(row.probability)} (${percent(row.probability)})</td>` : ""}
             </tr>
           `).join("")}
         </tbody>
@@ -444,11 +602,17 @@ function renderTallyTable(results, outcomes) {
   `;
 }
 
-function makeTally(count) {
-  if (!count) return "0";
-  const groups = Math.floor(count / 5);
-  const remainder = count % 5;
-  return `${"||||/ ".repeat(groups)}${"|".repeat(remainder)}`.trim();
+function normalizeOutcomes(outcomes) {
+  const totalWeight = outcomes.reduce((sum, outcome) => sum + (outcome.weight || 0), 0);
+  return outcomes.map((outcome) => ({
+    ...outcome,
+    probability: outcome.probability ?? (totalWeight ? outcome.weight / totalWeight : 0),
+  }));
+}
+
+function renderOutcomeLabel(outcome) {
+  if (!outcome.color) return escapeHtml(outcome.label);
+  return `<span class="swatch" style="display:inline-block; background:${outcome.color}"></span> ${escapeHtml(outcome.label)}`;
 }
 
 function rollDice() {
@@ -499,6 +663,7 @@ function renderDice() {
   $("#dice-total-label").textContent = `${dice.results.length} ${dice.results.length === 1 ? "roll" : "rolls"}`;
   $("#dice-editor-panel").classList.toggle("hidden", !dice.editorOpen);
   $("#dice-make").setAttribute("aria-expanded", String(dice.editorOpen));
+  renderOutputControls("dice", dice);
   renderDiceVisuals();
   renderDiceEditor();
   $("#dice-tally").innerHTML = renderDiceTally();
@@ -558,43 +723,8 @@ function renderDiceEditor() {
 
 function renderDiceTally() {
   const dice = state.experimental.dice;
-  if (!dice.results.length) {
-    return makeEmpty("Roll the dice to collect data.");
-  }
-
-  const counts = countBy(dice.results);
   const outcomes = dice.count === 1 ? oneDieOutcomes(dice.faces) : twoDiceOutcomes(dice.faces);
-  const total = dice.results.length;
-  return `
-    <div class="table-wrap">
-      <table class="tally-table">
-        <thead>
-          <tr>
-            <th>Outcome</th>
-            <th>Tally</th>
-            <th>Count</th>
-            <th>Relative Frequency</th>
-            <th>Theoretical</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${outcomes.map((outcome) => {
-            const count = counts.get(outcome.label) || 0;
-            const observed = count / total;
-            return `
-              <tr>
-                <td>${escapeHtml(outcome.label)}</td>
-                <td class="tally-marks">${makeTally(count)}</td>
-                <td>${count}</td>
-                <td>${formatDecimal(observed)} (${percent(observed)})</td>
-                <td>${formatDecimal(outcome.probability)} (${percent(outcome.probability)})</td>
-              </tr>
-            `;
-          }).join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
+  return renderOutcomeTable(dice.results, outcomes, dice, "Roll the dice to collect data.");
 }
 
 function oneDieOutcomes(faces) {
@@ -663,14 +793,18 @@ function bindEvents() {
     });
   });
 
+  $("#preset-select").addEventListener("change", resetPresetSpinner);
   $("#preset-spin").addEventListener("click", spinPreset);
   $("#preset-clear").addEventListener("click", clearPreset);
   $("#preset-new-spinner").addEventListener("click", resetPresetSpinner);
+  bindOutputControls("preset", state.experimental.preset, renderPreset);
 
   $("#custom-spin").addEventListener("click", spinCustom);
   $("#custom-clear").addEventListener("click", clearCustom);
+  $("#custom-apply-split").addEventListener("click", applyCustomSplit);
   $("#custom-add").addEventListener("click", addCustomSlice);
   $("#custom-remove").addEventListener("click", removeCustomSlice);
+  bindOutputControls("custom", state.experimental.custom, renderCustom);
   $("#custom-slice-editor").addEventListener("change", (event) => {
     const labelIndex = event.target.dataset.sliceLabel;
     const weightIndex = event.target.dataset.sliceWeight;
@@ -691,7 +825,7 @@ function bindEvents() {
     }
     state.experimental.custom.slices.splice(Number(removeIndex), 1);
     state.experimental.custom.results = [];
-    $("#custom-last-result").textContent = "Spinner changed; tally cleared.";
+    $("#custom-last-result").textContent = "Spinner changed; results cleared.";
     renderCustom();
   });
 
@@ -701,13 +835,14 @@ function bindEvents() {
       dice.count = getRadioValue("dice-count");
       dice.results = [];
       dice.lastFaces = Array.from({ length: dice.count }, (_, index) => dice.lastFaces[index] || dice.faces[0]);
-      $("#dice-last-result").textContent = "Dice changed; tally cleared.";
+      $("#dice-last-result").textContent = "Dice changed; results cleared.";
       renderDice();
     });
   });
   $("#dice-roll").addEventListener("click", rollDice);
   $("#dice-clear").addEventListener("click", clearDice);
   $("#dice-new").addEventListener("click", resetDice);
+  bindOutputControls("dice", state.experimental.dice, renderDice);
   $("#dice-make").addEventListener("click", () => {
     state.experimental.dice.editorOpen = !state.experimental.dice.editorOpen;
     renderDice();
@@ -717,13 +852,36 @@ function bindEvents() {
     if (faceIndex === undefined) return;
     state.experimental.dice.faces[Number(faceIndex)] = event.target.value.trim() || "?";
     state.experimental.dice.results = [];
-    $("#dice-last-result").textContent = "Dice changed; tally cleared.";
+    $("#dice-last-result").textContent = "Dice changed; results cleared.";
     renderDiceVisuals();
     $("#dice-tally").innerHTML = renderDiceTally();
   });
 }
 
+function bindOutputControls(prefix, settings, renderFn) {
+  $(`#${prefix}-output-view`).addEventListener("change", (event) => {
+    settings.outputView = event.target.value;
+    renderFn();
+  });
+  $(`#${prefix}-theoretical-toggle`).addEventListener("click", () => {
+    settings.showTheoretical = !settings.showTheoretical;
+    renderFn();
+  });
+}
+
+function renderStaticControls() {
+  $("#preset-select").innerHTML = SPINNER_PRESETS.map((preset) => `
+    <option value="${preset.id}">${preset.name}</option>
+  `).join("");
+
+  $("#custom-split-select").innerHTML = SPINNER_SPLITS.map((denominator) => `
+    <option value="${denominator}">1/${denominator} each (${denominator} slices)</option>
+  `).join("");
+  $("#custom-split-select").value = "4";
+}
+
 function init() {
+  renderStaticControls();
   bindEvents();
   renderActivity();
   renderMode();

@@ -383,10 +383,38 @@ select {
   margin-bottom: 0.85rem;
 }
 
+.output-heading-with-controls {
+  align-items: center;
+}
+
 .output-heading p {
   margin: 0;
   color: var(--muted);
   font-weight: 700;
+}
+
+.output-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+.output-controls label {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.output-controls select {
+  width: auto;
+  min-width: 9rem;
+}
+
+.quiet-button.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
 }
 
 .empty-state {
@@ -520,9 +548,13 @@ th {
   border-radius: 4px;
 }
 
-.tally-table .tally-marks {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  word-break: break-word;
+.split-control {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.custom-count-label {
+  margin-bottom: -0.7rem;
 }
 
 .dice-visuals {
@@ -617,6 +649,11 @@ th {
 
   .output-heading p {
     margin-top: 0.2rem;
+  }
+
+  .output-controls {
+    justify-content: flex-start;
+    margin-top: 0.75rem;
   }
 }
 

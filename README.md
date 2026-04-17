@@ -5,9 +5,10 @@ A static classroom app for exploring experimental probability with coin tosses, 
 ## Activities
 
 - Coin Toss: enter a number of tosses, run the tosses, switch between list, table, and ratio views, and clear results.
-- Experimental Probability: use a preset four-color spinner where red, yellow, green, and blue each have theoretical relative frequency 0.25.
-- Make Spinner: build a spinner with up to 12 slices and adjust each slice weight.
+- Experimental Probability: choose from multiple preset spinners, including a four-color spinner where red, yellow, green, and blue each have relative frequency 0.25.
+- Make Spinner: split a spinner into equal fractions such as 1/4 or 1/8, use ROYGB plus purple and pink, and adjust each slice weight.
 - Dice: roll either 1 die or 2 dice, use standard six-sided dice, or edit the six face labels.
+- Results: switch between count and relative frequency, with theoretical probability hidden by default and available from a toggle.
 
 ## Run Locally
 
