@@ -446,7 +446,7 @@ function renderPreset() {
   drawSpinner($("#preset-spinner-svg"), preset.slices, preset.rotation);
   $("#preset-total-label").textContent = `${preset.results.length} ${preset.results.length === 1 ? "spin" : "spins"}`;
   renderOutputControls("preset", preset);
-  $("#preset-tally").innerHTML = renderOutcomeTable(preset.results, summarizeSlices(preset.slices), preset, "Run the experiment to collect data.");
+  $("#preset-results").innerHTML = renderOutcomeTable(preset.results, summarizeSlices(preset.slices), preset, "Run the experiment to collect data.");
 }
 
 function addCustomSlice() {
@@ -536,7 +536,7 @@ function renderCustom() {
     </div>
   `;
   renderOutputControls("custom", custom);
-  $("#custom-tally").innerHTML = renderOutcomeTable(custom.results, summarizeSlices(custom.slices), custom, "Run the experiment to collect data.");
+  $("#custom-results").innerHTML = renderOutcomeTable(custom.results, summarizeSlices(custom.slices), custom, "Run the experiment to collect data.");
 }
 
 function summarizeSlices(slices) {
@@ -592,7 +592,7 @@ function renderOutcomeTable(results, outcomes, settings, emptyMessage) {
           ${rows.map((row) => `
             <tr>
               <td>${renderOutcomeLabel(row)}</td>
-              <td>${settings.outputView === "relative" ? `${formatDecimal(row.observed)} (${percent(row.observed)})` : row.count}</td>
+              <td>${formatResultValue(row, total, settings)}</td>
               ${settings.showTheoretical ? `<td>${formatDecimal(row.probability)} (${percent(row.probability)})</td>` : ""}
             </tr>
           `).join("")}
@@ -615,10 +615,15 @@ function renderOutcomeLabel(outcome) {
   return `<span class="swatch" style="display:inline-block; background:${outcome.color}"></span> ${escapeHtml(outcome.label)}`;
 }
 
+function formatResultValue(row, total, settings) {
+  if (settings.outputView !== "relative") return row.count;
+  return `${row.count}/${total}`;
+}
+
 function rollDice() {
   const dice = state.experimental.dice;
   dice.count = getRadioValue("dice-count");
-  const count = getRadioValue("dice-roll-count");
+  const count = getTrialCount("dice-roll-count", "#dice-custom-count");
   const rolls = [];
   let lastFaces = [];
 
@@ -666,7 +671,7 @@ function renderDice() {
   renderOutputControls("dice", dice);
   renderDiceVisuals();
   renderDiceEditor();
-  $("#dice-tally").innerHTML = renderDiceTally();
+  $("#dice-results").innerHTML = renderDiceResults();
 }
 
 function renderDiceVisuals() {
@@ -721,7 +726,7 @@ function renderDiceEditor() {
   `).join("");
 }
 
-function renderDiceTally() {
+function renderDiceResults() {
   const dice = state.experimental.dice;
   const outcomes = dice.count === 1 ? oneDieOutcomes(dice.faces) : twoDiceOutcomes(dice.faces);
   return renderOutcomeTable(dice.results, outcomes, dice, "Roll the dice to collect data.");
@@ -854,7 +859,7 @@ function bindEvents() {
     state.experimental.dice.results = [];
     $("#dice-last-result").textContent = "Dice changed; results cleared.";
     renderDiceVisuals();
-    $("#dice-tally").innerHTML = renderDiceTally();
+    $("#dice-results").innerHTML = renderDiceResults();
   });
 }
 

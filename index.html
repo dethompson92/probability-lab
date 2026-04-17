@@ -158,7 +158,7 @@
                 <button id="preset-theoretical-toggle" class="quiet-button" type="button" aria-pressed="false">Show Theoretical</button>
               </div>
             </div>
-            <div id="preset-tally"></div>
+            <div id="preset-results"></div>
           </div>
         </section>
 
@@ -238,7 +238,7 @@
                 <button id="custom-theoretical-toggle" class="quiet-button" type="button" aria-pressed="false">Show Theoretical</button>
               </div>
             </div>
-            <div id="custom-tally"></div>
+            <div id="custom-results"></div>
           </div>
         </section>
 
@@ -257,7 +257,14 @@
                 <label><input type="radio" name="dice-roll-count" value="1" checked> 1</label>
                 <label><input type="radio" name="dice-roll-count" value="5"> 5</label>
                 <label><input type="radio" name="dice-roll-count" value="10"> 10</label>
+                <label><input type="radio" name="dice-roll-count" value="25"> 25</label>
+                <label><input type="radio" name="dice-roll-count" value="50"> 50</label>
+                <label><input type="radio" name="dice-roll-count" value="100"> 100</label>
+                <label><input type="radio" name="dice-roll-count" value="1000"> 1000</label>
+                <label><input type="radio" name="dice-roll-count" value="custom"> Custom</label>
               </fieldset>
+              <label class="custom-count-label" for="dice-custom-count">Custom Rolls</label>
+              <input id="dice-custom-count" type="number" min="1" max="10000" step="1" value="250">
 
               <div class="button-row">
                 <button id="dice-roll" class="primary-button" type="button">Roll Dice</button>
@@ -298,7 +305,7 @@
                 <button id="dice-theoretical-toggle" class="quiet-button" type="button" aria-pressed="false">Show Theoretical</button>
               </div>
             </div>
-            <div id="dice-tally"></div>
+            <div id="dice-results"></div>
           </div>
         </section>
       </section>
