@@ -180,7 +180,8 @@ main {
 .output-panel,
 .coin-stage,
 .spinner-stage,
-.dice-stage {
+.dice-stage,
+.word-stage {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
@@ -309,7 +310,8 @@ select {
 
 .coin-stage,
 .spinner-stage,
-.dice-stage {
+.dice-stage,
+.word-stage {
   display: grid;
   place-items: center;
   min-height: 320px;
@@ -347,7 +349,8 @@ select {
 #coin-status,
 #preset-last-result,
 #custom-last-result,
-#dice-last-result {
+#dice-last-result,
+#poem-word-detail {
   min-height: 1.6em;
   margin: 1rem 0 0;
   color: var(--muted);
@@ -367,6 +370,32 @@ select {
   border-radius: 6px;
   padding: 0.45rem 0.6rem;
   background: #ffffff;
+}
+
+.count-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.8rem;
+}
+
+.count-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 1rem;
+}
+
+.count-card strong {
+  display: block;
+  font-size: 2.25rem;
+  line-height: 1;
+}
+
+.count-card span {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-weight: 800;
 }
 
 .output-panel {
@@ -437,6 +466,57 @@ select {
   padding: 0.4rem 0.55rem;
   background: #ffffff;
   font-weight: 750;
+}
+
+.word-list li {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.word-list span {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.word-label {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.word-display {
+  margin: 0.2rem 0;
+  max-width: 100%;
+  color: var(--accent-strong);
+  font-size: 4rem;
+  font-weight: 950;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.poem-meta {
+  margin: 0;
+  color: var(--muted);
+}
+
+.pdf-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  padding: 0.7rem 1rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.pdf-link:hover,
+.pdf-link:focus-visible {
+  background: #ffffff;
 }
 
 .table-wrap {
@@ -683,7 +763,8 @@ th {
   .output-panel,
   .coin-stage,
   .spinner-stage,
-  .dice-stage {
+  .dice-stage,
+  .word-stage {
     max-width: min(358px, calc(100vw - 2rem));
   }
 

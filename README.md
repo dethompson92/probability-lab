@@ -1,14 +1,15 @@
 # Probability Lab
 
-A static classroom app for exploring experimental probability with coin tosses, spinners, and dice.
+A static classroom app for exploring experimental probability with coin tosses, spinners, dice, and poem word sampling.
 
 ## Activities
 
-- Coin Toss: enter a number of tosses, run the tosses, switch between list, table, and ratio views, and clear results.
+- Coin Toss: enter a number of tosses, run the tosses, keep the main view focused on heads, tails, and total tosses, and open list, table, or ratio details when needed.
 - Experimental Probability: choose from multiple preset spinners, including a four-color spinner where red, yellow, green, and blue each have relative frequency 0.25.
 - Make Spinner: split a spinner into equal fractions such as 1/4 or 1/8, use ROYGB plus purple and pink, and adjust each slice weight.
 - Dice: roll either 1 die or 2 dice, use the same preset and custom trial counts as the spinners, or edit the six face labels.
 - Results: switch between count and relative frequency, with relative frequencies shown only as fractions and theoretical probability hidden by default.
+- Poem Word Generator: pick random words from Paul Laurence Dunbar's "Sympathy" using the 186-word classroom copy, with the poem PDF linked in the app.
 
 ## Run Locally
 

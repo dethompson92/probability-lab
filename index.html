@@ -12,8 +12,8 @@
         <p class="kicker">Probability Lab</p>
         <h1>Run a chance experiment, then compare what happened with what should happen over time.</h1>
         <p>
-          Toss coins, spin color wheels, and roll one or two dice. Track results, clear them, and try
-          a larger sample.
+          Toss coins, spin color wheels, roll one or two dice, and sample words from a poem. Track
+          results, clear them, and try a larger sample.
         </p>
       </div>
       <svg class="header-art" viewBox="0 0 360 180" role="img" aria-label="A coin, spinner, and die">
@@ -49,6 +49,7 @@
       <nav class="activity-tabs" aria-label="Choose an activity">
         <button class="tab-button active" type="button" data-activity="coin" aria-pressed="true">Coin Toss</button>
         <button class="tab-button" type="button" data-activity="experimental" aria-pressed="false">Experimental Probability</button>
+        <button class="tab-button" type="button" data-activity="poem" aria-pressed="false">Poem Word Generator</button>
       </nav>
 
       <section id="coin-activity" class="activity-section active" aria-labelledby="coin-title">
@@ -66,11 +67,13 @@
             </div>
             <button id="coin-clear-button" class="quiet-button" type="button">Clear Results</button>
 
-            <div class="view-toggle" role="group" aria-label="Coin output view">
-              <button class="chip active" type="button" data-coin-view="list" aria-pressed="true">List</button>
-              <button class="chip" type="button" data-coin-view="table" aria-pressed="false">Table</button>
-              <button class="chip" type="button" data-coin-view="ratios" aria-pressed="false">Ratios</button>
-            </div>
+            <label for="coin-detail-view">Optional Result View</label>
+            <select id="coin-detail-view">
+              <option value="summary">Counts Only</option>
+              <option value="list">List</option>
+              <option value="table">Table</option>
+              <option value="ratios">Ratios</option>
+            </select>
           </div>
 
           <div class="coin-stage" aria-live="polite">
@@ -309,10 +312,45 @@
           </div>
         </section>
       </section>
+
+      <section id="poem-activity" class="activity-section" aria-labelledby="poem-title">
+        <div class="section-heading">
+          <p class="kicker">Poem Word Generator</p>
+          <h2 id="poem-title">Choose a random word from "Sympathy."</h2>
+        </div>
+
+        <div class="experiment-grid">
+          <div class="control-panel">
+            <h3>Sympathy</h3>
+            <p class="helper-text">Paul Laurence Dunbar</p>
+            <p class="poem-meta"><strong id="poem-total-words">186</strong> poem words available.</p>
+            <div class="button-row">
+              <button id="poem-pick-one" class="primary-button" type="button">Pick 1 Word</button>
+              <button id="poem-pick-five" class="quiet-button" type="button">Pick 5 Words</button>
+            </div>
+            <button id="poem-clear" class="quiet-button" type="button">Clear Words</button>
+            <a class="pdf-link" href="EM2_G7_M6_TC_L12_Sympathy_WCAG21_v5.pdf" target="_blank" rel="noopener">Open the poem PDF</a>
+          </div>
+
+          <div class="word-stage" aria-live="polite">
+            <p class="word-label">Current Word</p>
+            <p id="poem-current-word" class="word-display">Ready</p>
+            <p id="poem-word-detail">Pick a word to begin.</p>
+          </div>
+        </div>
+
+        <div class="output-panel">
+          <div class="output-heading">
+            <h3>Selected Words</h3>
+            <p id="poem-summary">0 words picked.</p>
+          </div>
+          <div id="poem-output"></div>
+        </div>
+      </section>
     </main>
 
     <footer class="app-footer">
-      Built for classroom experiments with theoretical and experimental probability.
+      Built for classroom experiments with probability and word sampling.
     </footer>
 
     <script src="app.js"></script>

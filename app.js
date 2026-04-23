@@ -94,11 +94,40 @@ const SPINNER_PRESETS = [
   },
 ];
 
+const POEM_LINES = [
+  "I know what the caged bird feels alas",
+  "When the sun is bright on the upland slopes",
+  "When the wind stirs soft through the springing grass",
+  "And the river flows like a stream of glass",
+  "When the first bird sings and the first bud opes",
+  "And the faint perfume from its chalice steals",
+  "I know what the caged bird feels",
+  "I know why the caged bird beats his wing",
+  "Till its blood is red on the cruel bars",
+  "For he must fly back to his perch and cling",
+  "When he fain would be on the bough a-swing",
+  "And a pain still throbs in the old old scars",
+  "And they pulse again with a keener sting",
+  "I know why he beats his wing",
+  "I know why the caged bird sings ah me",
+  "When his wing is bruised and his bosom sore",
+  "When he beats his bars and he would be free",
+  "It is not a carol of joy or glee",
+  "But a prayer that he sends from his heart's deep core",
+  "But a plea that upward to Heaven he flings",
+  "I know why the caged bird sings",
+];
+const POEM_WORDS = POEM_LINES.join(" ").split(/\s+/);
+
 const state = {
   activity: "coin",
   coin: {
     tosses: [],
-    view: "list",
+    view: "summary",
+  },
+  poem: {
+    picks: [],
+    current: null,
   },
   experimental: {
     mode: "preset",
@@ -197,6 +226,7 @@ function renderActivity() {
 
   $("#coin-activity").classList.toggle("active", state.activity === "coin");
   $("#experimental-activity").classList.toggle("active", state.activity === "experimental");
+  $("#poem-activity").classList.toggle("active", state.activity === "poem");
 }
 
 function renderMode() {
@@ -251,14 +281,15 @@ function renderCoin() {
   $("#coin-tails").textContent = tails;
   $("#coin-summary").textContent = total ? `${heads} heads and ${tails} tails after ${total} tosses.` : "No tosses yet.";
 
-  $$(".chip[data-coin-view]").forEach((button) => {
-    const active = button.dataset.coinView === state.coin.view;
-    button.classList.toggle("active", active);
-    button.setAttribute("aria-pressed", String(active));
-  });
+  $("#coin-detail-view").value = state.coin.view;
+
+  if (state.coin.view === "summary") {
+    $("#coin-output").innerHTML = renderCoinSummary(heads, tails, total);
+    return;
+  }
 
   if (!total) {
-    $("#coin-output").innerHTML = makeEmpty("Toss the coin to start a new list of results.");
+    $("#coin-output").innerHTML = makeEmpty("Toss the coin to start collecting detailed results.");
     return;
   }
 
@@ -303,14 +334,82 @@ function renderCoin() {
   `;
 }
 
+function renderCoinSummary(heads, tails, total) {
+  return `
+    <div class="count-grid">
+      <div class="count-card">
+        <strong>${heads}</strong>
+        <span>Heads</span>
+      </div>
+      <div class="count-card">
+        <strong>${tails}</strong>
+        <span>Tails</span>
+      </div>
+      <div class="count-card">
+        <strong>${total}</strong>
+        <span>Total Tosses</span>
+      </div>
+    </div>
+  `;
+}
+
 function renderRatioItem(label, count, total, color) {
   const value = total ? count / total : 0;
   return `
     <div class="ratio-item" style="border-left-color: ${color}">
       <strong>${count}/${total}</strong>
-      <span>${label}: ${formatDecimal(value)} or ${percent(value)}</span>
+      <span>${label}</span>
       <div class="meter" aria-hidden="true"><span style="--value: ${value * 100}%; background: ${color}"></span></div>
     </div>
+  `;
+}
+
+function pickPoemWords(count) {
+  const picks = Array.from({ length: count }, () => {
+    const index = Math.floor(Math.random() * POEM_WORDS.length);
+    return {
+      word: POEM_WORDS[index],
+      index: index + 1,
+    };
+  });
+
+  state.poem.picks.push(...picks);
+  state.poem.current = picks[picks.length - 1];
+  renderPoem();
+}
+
+function clearPoemWords() {
+  state.poem.picks = [];
+  state.poem.current = null;
+  renderPoem();
+}
+
+function renderPoem() {
+  $("#poem-total-words").textContent = POEM_WORDS.length;
+  $("#poem-summary").textContent = `${state.poem.picks.length} ${state.poem.picks.length === 1 ? "word" : "words"} picked.`;
+
+  if (state.poem.current) {
+    $("#poem-current-word").textContent = state.poem.current.word;
+    $("#poem-word-detail").textContent = `Word ${state.poem.current.index} of ${POEM_WORDS.length}.`;
+  } else {
+    $("#poem-current-word").textContent = "Ready";
+    $("#poem-word-detail").textContent = `Pick from ${POEM_WORDS.length} poem words.`;
+  }
+
+  if (!state.poem.picks.length) {
+    $("#poem-output").innerHTML = makeEmpty("Pick a word to start the list.");
+    return;
+  }
+
+  $("#poem-output").innerHTML = `
+    <ol class="result-list word-list">
+      ${state.poem.picks.map((pick, index) => `
+        <li>
+          <strong>${index + 1}. ${escapeHtml(pick.word)}</strong>
+          <span>word ${pick.index}</span>
+        </li>
+      `).join("")}
+    </ol>
   `;
 }
 
@@ -791,12 +890,13 @@ function bindEvents() {
 
   $("#coin-toss-button").addEventListener("click", tossCoins);
   $("#coin-clear-button").addEventListener("click", clearCoin);
-  $$(".chip[data-coin-view]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.coin.view = button.dataset.coinView;
-      renderCoin();
-    });
+  $("#coin-detail-view").addEventListener("change", (event) => {
+    state.coin.view = event.target.value;
+    renderCoin();
   });
+  $("#poem-pick-one").addEventListener("click", () => pickPoemWords(1));
+  $("#poem-pick-five").addEventListener("click", () => pickPoemWords(5));
+  $("#poem-clear").addEventListener("click", clearPoemWords);
 
   $("#preset-select").addEventListener("change", resetPresetSpinner);
   $("#preset-spin").addEventListener("click", spinPreset);
@@ -891,6 +991,7 @@ function init() {
   renderActivity();
   renderMode();
   renderCoin();
+  renderPoem();
   renderPreset();
   renderCustom();
   renderDice();
