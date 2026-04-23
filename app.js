@@ -895,7 +895,6 @@ function bindEvents() {
     renderCoin();
   });
   $("#poem-pick-one").addEventListener("click", () => pickPoemWords(1));
-  $("#poem-pick-five").addEventListener("click", () => pickPoemWords(5));
   $("#poem-clear").addEventListener("click", clearPoemWords);
 
   $("#preset-select").addEventListener("change", resetPresetSpinner);
