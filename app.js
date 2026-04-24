@@ -1,4 +1,7 @@
 const COLORS = {
+  Black: "#17211f",
+  White: "#f8fafc",
+  Brown: "#8b5e34",
   Red: "#d62828",
   Orange: "#f77f00",
   Yellow: "#f4d35e",
@@ -9,8 +12,11 @@ const COLORS = {
 };
 
 const COLOR_ORDER = ["Red", "Orange", "Yellow", "Green", "Blue", "Purple", "Pink"];
+const CUBE_COLOR_ORDER = ["Black", "White", "Yellow", "Red", "Blue", "Green", "Orange", "Brown", "Pink"];
 const SPINNER_SPLITS = [2, 3, 4, 5, 6, 8, 10, 12];
 const MAX_TRIALS = 10000;
+const PENNY_DOT_PLOT_LIMIT = 75;
+const PENNY_MILESTONES = [10, 25, 50, 75];
 
 const SPINNER_PRESETS = [
   {
@@ -117,7 +123,72 @@ const POEM_LINES = [
   "But a plea that upward to Heaven he flings",
   "I know why the caged bird sings",
 ];
+
 const POEM_WORDS = POEM_LINES.join(" ").split(/\s+/);
+
+const PENNY_AGE_COUNTS = {
+  0: 17,
+  1: 8,
+  2: 5,
+  3: 2,
+  4: 4,
+  5: 5,
+  6: 2,
+  7: 4,
+  8: 3,
+  9: 3,
+  10: 8,
+  11: 1,
+  12: 2,
+  13: 2,
+  14: 2,
+  15: 1,
+  16: 7,
+  17: 5,
+  18: 1,
+  19: 4,
+  20: 2,
+  21: 3,
+  22: 4,
+  23: 5,
+  24: 5,
+  25: 2,
+  26: 2,
+  27: 1,
+  28: 2,
+  29: 3,
+  30: 5,
+  31: 2,
+  32: 5,
+  33: 2,
+  34: 3,
+  37: 4,
+  38: 6,
+  39: 2,
+  41: 1,
+  42: 1,
+  43: 2,
+  46: 1,
+  48: 2,
+  53: 1,
+  54: 1,
+};
+
+const PENNY_AGES = Object.entries(PENNY_AGE_COUNTS).flatMap(([age, count]) => (
+  Array.from({ length: count }, () => Number(age))
+));
+
+const DEFAULT_CUBE_CONFIG = [
+  { label: "Black", enabled: true, count: 10 },
+  { label: "White", enabled: true, count: 4 },
+  { label: "Yellow", enabled: true, count: 1 },
+  { label: "Red", enabled: true, count: 1 },
+  { label: "Blue", enabled: true, count: 1 },
+  { label: "Green", enabled: true, count: 1 },
+  { label: "Orange", enabled: true, count: 1 },
+  { label: "Brown", enabled: true, count: 1 },
+  { label: "Pink", enabled: false, count: 0 },
+];
 
 const state = {
   activity: "coin",
@@ -128,6 +199,21 @@ const state = {
   poem: {
     picks: [],
     current: null,
+  },
+  pennies: {
+    bag: shuffleArray(PENNY_AGES),
+    drawn: [],
+    current: null,
+    showTables: false,
+    showMilestones: false,
+  },
+  cubes: {
+    colors: makeDefaultCubeConfig(),
+    targetTotal: 20,
+    replacement: true,
+    draws: [],
+    current: null,
+    bag: [],
   },
   experimental: {
     mode: "preset",
@@ -158,11 +244,35 @@ const state = {
   },
 };
 
+state.cubes.bag = shuffleArray(expandCubeBag(state.cubes.colors));
+
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 
-const formatDecimal = (value) => Number.isFinite(value) ? value.toFixed(3).replace(/0+$/, "").replace(/\.$/, "") : "0";
+const formatDecimal = (value) => Number.isFinite(value)
+  ? value.toFixed(3).replace(/0+$/, "").replace(/\.$/, "")
+  : "0";
 const percent = (value) => `${(value * 100).toFixed(1)}%`;
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function shuffleArray(items) {
+  const copy = [...items];
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+  }
+  return copy;
+}
+
+function makeDefaultCubeConfig() {
+  return DEFAULT_CUBE_CONFIG.map((item) => ({
+    ...item,
+    color: COLORS[item.label],
+  }));
+}
 
 function makeSlice(label, weight = 1) {
   return {
@@ -217,6 +327,43 @@ function makeEmpty(message) {
   return `<p class="empty-state">${message}</p>`;
 }
 
+function median(values) {
+  if (!values.length) return null;
+  const sorted = [...values].sort((left, right) => left - right);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2
+    ? sorted[middle]
+    : (sorted[middle - 1] + sorted[middle]) / 2;
+}
+
+function expandCubeBag(config) {
+  return config.flatMap((item) => (
+    item.enabled ? Array.from({ length: Math.max(0, Math.floor(item.count || 0)) }, () => item.label) : []
+  ));
+}
+
+function getCubeActiveConfig() {
+  return state.cubes.colors.filter((item) => item.enabled && item.count > 0);
+}
+
+function getCubeTotal() {
+  return getCubeActiveConfig().reduce((sum, item) => sum + item.count, 0);
+}
+
+function rebuildCubeBag() {
+  state.cubes.bag = shuffleArray(expandCubeBag(state.cubes.colors));
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  }[char]));
+}
+
 function renderActivity() {
   $$(".tab-button").forEach((button) => {
     const active = button.dataset.activity === state.activity;
@@ -224,9 +371,10 @@ function renderActivity() {
     button.setAttribute("aria-pressed", String(active));
   });
 
-  $("#coin-activity").classList.toggle("active", state.activity === "coin");
-  $("#experimental-activity").classList.toggle("active", state.activity === "experimental");
-  $("#poem-activity").classList.toggle("active", state.activity === "poem");
+  $$(".activity-section").forEach((section) => {
+    const active = section.id === `${state.activity}-activity`;
+    section.classList.toggle("active", active);
+  });
 }
 
 function renderMode() {
@@ -280,7 +428,6 @@ function renderCoin() {
   $("#coin-heads").textContent = heads;
   $("#coin-tails").textContent = tails;
   $("#coin-summary").textContent = total ? `${heads} heads and ${tails} tails after ${total} tosses.` : "No tosses yet.";
-
   $("#coin-detail-view").value = state.coin.view;
 
   if (state.coin.view === "summary") {
@@ -463,7 +610,7 @@ function getReadableTextColor(hexColor) {
   const g = parseInt(hex.slice(2, 4), 16);
   const b = parseInt(hex.slice(4, 6), 16);
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.58 ? "#17211f" : "#ffffff";
+  return luminance > 0.62 ? "#17211f" : "#ffffff";
 }
 
 function polarToCartesian(cx, cy, radius, angleDegrees) {
@@ -491,11 +638,13 @@ function weightedSpin(slices) {
   let target = Math.random() * total;
   for (const slice of slices) {
     target -= slice.weight;
-    if (target <= 0) {
-      return slice.label;
-    }
+    if (target <= 0) return slice.label;
   }
   return slices[slices.length - 1].label;
+}
+
+function spinMany(slices, count) {
+  return Array.from({ length: count }, () => weightedSpin(slices));
 }
 
 function spinPreset() {
@@ -514,10 +663,6 @@ function spinCustom() {
   state.experimental.custom.rotation += 720 + Math.random() * 720;
   $("#custom-last-result").textContent = `${count} ${count === 1 ? "spin" : "spins"} added. Last spin: ${results[results.length - 1]}.`;
   renderCustom();
-}
-
-function spinMany(slices, count) {
-  return Array.from({ length: count }, () => weightedSpin(slices));
 }
 
 function clearPreset() {
@@ -660,19 +805,16 @@ function renderOutputControls(prefix, settings) {
 }
 
 function renderOutcomeTable(results, outcomes, settings, emptyMessage) {
-  if (!results.length) {
-    return makeEmpty(emptyMessage);
-  }
+  if (!results.length) return makeEmpty(emptyMessage);
 
   const counts = countBy(results);
   const total = results.length;
   const rows = normalizeOutcomes(outcomes).map((outcome) => {
     const count = counts.get(outcome.label) || 0;
-    const observed = total ? count / total : 0;
     return {
       ...outcome,
       count,
-      observed,
+      observed: total ? count / total : 0,
     };
   });
   const resultHeader = settings.outputView === "relative" ? "Relative Frequency" : "Count";
@@ -726,7 +868,7 @@ function rollDice() {
   const rolls = [];
   let lastFaces = [];
 
-  for (let i = 0; i < count; i += 1) {
+  for (let index = 0; index < count; index += 1) {
     const faces = Array.from({ length: dice.count }, () => randomItem(dice.faces));
     lastFaces = faces;
     rolls.push(formatDiceOutcome(faces));
@@ -796,7 +938,9 @@ function renderDie(face) {
       <div class="die" aria-label="Die showing ${number}">
         ${Array.from({ length: 9 }, (_, index) => {
           const place = index + 1;
-          return positions[number].includes(place) ? `<span class="pip" style="grid-area:${gridArea(place)}"></span>` : "<span></span>";
+          return positions[number].includes(place)
+            ? `<span class="pip" style="grid-area:${gridArea(place)}"></span>`
+            : "<span></span>";
         }).join("")}
       </div>
     `;
@@ -857,20 +1001,505 @@ function twoDiceOutcomes(faces) {
 function compareOutcomes(a, b) {
   const left = Number(a.label);
   const right = Number(b.label);
-  if (Number.isFinite(left) && Number.isFinite(right)) {
-    return left - right;
-  }
+  if (Number.isFinite(left) && Number.isFinite(right)) return left - right;
   return a.label.localeCompare(b.label);
 }
 
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, (char) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;",
-  }[char]));
+function animateReveal(selector) {
+  const node = $(selector);
+  if (!node) return;
+  node.classList.remove("animate");
+  void node.offsetWidth;
+  node.classList.add("animate");
+}
+
+function resetPennies() {
+  state.pennies.bag = shuffleArray(PENNY_AGES);
+  state.pennies.drawn = [];
+  state.pennies.current = null;
+  $("#penny-status").textContent = "Mix the bag and pull a penny to begin.";
+  renderPennies();
+}
+
+function pullPennies(count) {
+  const available = state.pennies.bag.length;
+  if (!available) {
+    $("#penny-status").textContent = "The paper bag is empty. Reset the bag to sample again.";
+    return;
+  }
+
+  const actual = Math.min(count, available);
+  const pulled = state.pennies.bag.splice(0, actual);
+  state.pennies.drawn.push(...pulled);
+  state.pennies.current = pulled[pulled.length - 1];
+  $("#penny-status").textContent = actual < count
+    ? `The bag ran out, so ${actual} ${actual === 1 ? "penny was" : "pennies were"} pulled.`
+    : `Pulled ${actual} ${actual === 1 ? "penny" : "pennies"}. Larger numbers mean older pennies.`;
+  animateReveal("#penny-reveal-token");
+  renderPennies();
+}
+
+function renderPennies() {
+  const pennies = state.pennies.drawn;
+  const total = pennies.length;
+  const remaining = state.pennies.bag.length;
+  const oldest = total ? Math.max(...pennies) : 0;
+  const newest = total ? Math.min(...pennies) : 0;
+  const sampleMedian = median(pennies);
+  const current = state.pennies.current;
+
+  $("#penny-show-tables").checked = state.pennies.showTables;
+  $("#penny-show-milestones").checked = state.pennies.showMilestones;
+  $("#penny-total-drawn").textContent = total;
+  $("#penny-remaining").textContent = remaining;
+  $("#penny-current-max").textContent = oldest;
+  $("#penny-current-age").textContent = current === null ? "Ready" : `${current} years`;
+
+  const reveal = $("#penny-reveal-token");
+  reveal.textContent = current === null ? "?" : current;
+
+  if (!total) {
+    $("#penny-summary").textContent = "No pennies pulled yet.";
+    $("#penny-output").innerHTML = makeEmpty("Pull pennies from the bag to build a random sample of penny ages.");
+    return;
+  }
+
+  $("#penny-summary").textContent = `${total} ${total === 1 ? "penny" : "pennies"} pulled. Newest age: ${newest}. Median age: ${formatDecimal(sampleMedian)}. Oldest age: ${oldest}.`;
+
+  const plotValues = pennies.slice(0, PENNY_DOT_PLOT_LIMIT);
+  const note = total > PENNY_DOT_PLOT_LIMIT
+    ? "* Only the first 75 pennies are depicted in the dot plot."
+    : "";
+
+  const sections = [
+    `
+      <div class="count-grid">
+        <div class="count-card">
+          <strong>${total}</strong>
+          <span>Pennies Pulled</span>
+        </div>
+        <div class="count-card">
+          <strong>${formatDecimal(sampleMedian)}</strong>
+          <span>Median Age</span>
+        </div>
+        <div class="count-card">
+          <strong>${oldest}</strong>
+          <span>Oldest Penny</span>
+        </div>
+      </div>
+    `,
+  ];
+
+  if (total < 10) {
+    sections.push(`<p class="helper-text">Pull ${10 - total} more ${10 - total === 1 ? "penny" : "pennies"} to show the dot plot.</p>`);
+  } else {
+    sections.push(`
+      <div class="chart-block">
+        <div class="output-heading compact-heading">
+          <h3>Dot Plot of Penny Ages</h3>
+          <p>${note || `${plotValues.length} penny ages shown.`}</p>
+        </div>
+        ${renderDotPlot(plotValues, { min: 0, max: 55, tickEvery: 5, axisLabel: "Penny Age (years)" })}
+      </div>
+    `);
+  }
+
+  if (state.pennies.showMilestones) {
+    const milestonePlots = PENNY_MILESTONES
+      .filter((size) => total >= size)
+      .map((size) => `
+        <article class="snapshot-card">
+          <h4>${size} Penny Sample</h4>
+          ${renderDotPlot(pennies.slice(0, size), { min: 0, max: 55, tickEvery: 5, axisLabel: "Age", compact: true })}
+        </article>
+      `)
+      .join("");
+
+    sections.push(milestonePlots
+      ? `<div class="snapshot-grid">${milestonePlots}</div>`
+      : `<p class="helper-text">Milestone snapshots appear after you reach 10 pennies.</p>`);
+  }
+
+  if (state.pennies.showTables) {
+    sections.push(renderPennyTables(pennies));
+  }
+
+  $("#penny-output").innerHTML = sections.join("");
+}
+
+function renderDotPlot(values, options = {}) {
+  const {
+    min = 0,
+    max = 10,
+    tickEvery = 1,
+    axisLabel = "Value",
+    compact = false,
+  } = options;
+
+  const counts = countBy(values);
+  const maxStack = Math.max(1, ...Array.from(counts.values()), 1);
+  const columns = Array.from({ length: max - min + 1 }, (_, index) => {
+    const value = min + index;
+    const count = counts.get(value) || 0;
+    return `
+      <div class="dot-column">
+        <div class="dot-stack">
+          ${Array.from({ length: count }, () => `<span class="dot ${compact ? "compact-dot" : ""}"></span>`).join("")}
+        </div>
+        <div class="dot-label">${value % tickEvery === 0 ? value : ""}</div>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="table-wrap">
+      <div class="dot-plot-shell ${compact ? "compact-plot-shell" : ""}" style="--dot-columns:${max - min + 1}; --dot-max-stack:${maxStack};">
+        <div class="dot-plot">${columns}</div>
+        <p class="axis-label">${axisLabel}</p>
+      </div>
+    </div>
+  `;
+}
+
+function renderPennyTables(values) {
+  const counts = countBy(values);
+  const total = values.length;
+  const ages = Array.from(counts.keys()).sort((left, right) => left - right);
+
+  return `
+    <div class="dual-table-grid">
+      <div class="output-panel inset-panel">
+        <div class="output-heading compact-heading">
+          <h3>Frequency Table</h3>
+          <p>${total} total pennies</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Age</th>
+                <th>Frequency</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${ages.map((age) => `
+                <tr>
+                  <td>${age}</td>
+                  <td>${counts.get(age)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="output-panel inset-panel">
+        <div class="output-heading compact-heading">
+          <h3>Relative Frequency Table</h3>
+          <p>Based on all pulls</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Age</th>
+                <th>Relative Frequency</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${ages.map((age) => {
+                const frequency = counts.get(age);
+                return `
+                  <tr>
+                    <td>${age}</td>
+                    <td>${frequency}/${total} (${percent(frequency / total)})</td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function resetCubeSetup() {
+  state.cubes.colors = makeDefaultCubeConfig();
+  state.cubes.targetTotal = 20;
+  state.cubes.replacement = true;
+  state.cubes.draws = [];
+  state.cubes.current = null;
+  rebuildCubeBag();
+  $("#cube-status").textContent = "Lesson-inspired bag restored. Pull a cube to begin.";
+  renderCubes();
+}
+
+function clearCubeResults() {
+  state.cubes.draws = [];
+  state.cubes.current = null;
+  rebuildCubeBag();
+  $("#cube-status").textContent = "Results cleared. The bag is ready for another experiment.";
+  renderCubes();
+}
+
+function updateCubeColor(index, updates) {
+  state.cubes.colors[index] = {
+    ...state.cubes.colors[index],
+    ...updates,
+  };
+  state.cubes.targetTotal = getCubeTotal() || state.cubes.targetTotal;
+  state.cubes.draws = [];
+  state.cubes.current = null;
+  rebuildCubeBag();
+  $("#cube-status").textContent = "Bag updated; results cleared.";
+  renderCubes();
+}
+
+function scaleCubeCountsToTarget() {
+  const target = clamp(Math.floor(Number($("#cube-target-total").value) || 1), 1, 500);
+  $("#cube-target-total").value = target;
+  const active = state.cubes.colors.filter((item) => item.enabled);
+
+  if (!active.length) {
+    $("#cube-status").textContent = "Turn on at least one color before scaling the bag.";
+    return;
+  }
+
+  const currentTotal = active.reduce((sum, item) => sum + item.count, 0);
+  let nextCounts;
+
+  if (currentTotal === 0) {
+    const base = Math.floor(target / active.length);
+    let remainder = target % active.length;
+    nextCounts = active.map((item) => ({
+      label: item.label,
+      count: base + (remainder-- > 0 ? 1 : 0),
+    }));
+  } else {
+    const raw = active.map((item) => ({
+      label: item.label,
+      exact: (item.count / currentTotal) * target,
+    }));
+    let assigned = 0;
+    nextCounts = raw.map((item) => {
+      const count = Math.floor(item.exact);
+      assigned += count;
+      return { label: item.label, count, remainder: item.exact - count };
+    });
+    nextCounts
+      .sort((left, right) => right.remainder - left.remainder)
+      .slice(0, target - assigned)
+      .forEach((item) => {
+        item.count += 1;
+      });
+  }
+
+  state.cubes.colors = state.cubes.colors.map((item) => {
+    const match = nextCounts.find((next) => next.label === item.label);
+    return {
+      ...item,
+      count: item.enabled ? (match ? match.count : 0) : 0,
+    };
+  });
+  state.cubes.targetTotal = target;
+  state.cubes.draws = [];
+  state.cubes.current = null;
+  rebuildCubeBag();
+  $("#cube-status").textContent = `Bag scaled to ${target} cubes and results were cleared.`;
+  renderCubes();
+}
+
+function drawCubes(count) {
+  const activeBag = expandCubeBag(state.cubes.colors);
+  if (!activeBag.length) {
+    $("#cube-status").textContent = "Add at least one active cube to the bag before pulling.";
+    return;
+  }
+
+  let pulls = [];
+  if (state.cubes.replacement) {
+    pulls = Array.from({ length: count }, () => randomItem(activeBag));
+  } else {
+    const actual = Math.min(count, state.cubes.bag.length);
+    pulls = state.cubes.bag.splice(0, actual);
+    if (!pulls.length) {
+      $("#cube-status").textContent = "No cubes remain in the bag. Clear results or turn replacement back on.";
+      renderCubes();
+      return;
+    }
+    if (actual < count) {
+      $("#cube-status").textContent = `Only ${actual} ${actual === 1 ? "cube was" : "cubes were"} available to pull.`;
+    }
+  }
+
+  state.cubes.draws.push(...pulls);
+  state.cubes.current = pulls[pulls.length - 1];
+  if (!(!state.cubes.replacement && pulls.length < count)) {
+    $("#cube-status").textContent = `${pulls.length} ${pulls.length === 1 ? "cube" : "cubes"} pulled ${state.cubes.replacement ? "with replacement" : "without replacement"}.`;
+  }
+  animateReveal("#cube-reveal-token");
+  renderCubes();
+}
+
+function renderCubes() {
+  const totalInBag = getCubeTotal();
+  const remaining = state.cubes.replacement ? totalInBag : state.cubes.bag.length;
+  const current = state.cubes.current;
+  const currentColor = current ? COLORS[current] : "#ffffff";
+  const currentText = current ? getReadableTextColor(currentColor) : "#17211f";
+
+  $("#cube-target-total").value = state.cubes.targetTotal;
+  $("#cube-total-drawn").textContent = state.cubes.draws.length;
+  $("#cube-active-total").textContent = totalInBag;
+  $("#cube-remaining").textContent = remaining;
+  $("#cube-current-color").textContent = current || "Ready";
+
+  const token = $("#cube-reveal-token");
+  token.textContent = current || "?";
+  token.style.background = current ? currentColor : "#ffffff";
+  token.style.color = currentText;
+  token.style.borderColor = current ? currentColor : "#cbd8d2";
+
+  const toggle = $("#cube-replacement-toggle");
+  toggle.classList.toggle("active", state.cubes.replacement);
+  toggle.setAttribute("aria-pressed", String(state.cubes.replacement));
+  toggle.textContent = state.cubes.replacement ? "With Replacement" : "Without Replacement";
+
+  $("#cube-color-editor").innerHTML = renderCubeEditor();
+  $("#cube-summary").textContent = totalInBag
+    ? `${totalInBag} cubes configured across ${getCubeActiveConfig().length} active ${getCubeActiveConfig().length === 1 ? "color" : "colors"}.`
+    : "No cubes are active in the bag yet.";
+  $("#cube-output").innerHTML = renderCubeOutput();
+}
+
+function renderCubeEditor() {
+  const total = getCubeTotal();
+  return state.cubes.colors.map((item, index) => {
+    const share = total && item.enabled ? percent(item.count / total) : "0.0%";
+    return `
+      <div class="color-row ${item.enabled ? "" : "muted-row"}">
+        <label class="color-toggle">
+          <input data-cube-enabled="${index}" type="checkbox" ${item.enabled ? "checked" : ""}>
+          <span class="swatch" style="background:${item.color}"></span>
+          <span>${item.label}</span>
+        </label>
+        <label>
+          Count
+          <input data-cube-count="${index}" type="number" min="0" max="500" step="1" value="${item.count}" ${item.enabled ? "" : "disabled"}>
+        </label>
+        <span class="helper-chip">${share}</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderCubeOutput() {
+  const active = getCubeActiveConfig();
+  const total = getCubeTotal();
+  const drawCounts = countBy(state.cubes.draws);
+
+  const bagRows = active.length
+    ? active.map((item) => `
+        <tr>
+          <td>${renderOutcomeLabel(item)}</td>
+          <td>${item.count}</td>
+          <td>${total ? percent(item.count / total) : "0.0%"}</td>
+        </tr>
+      `).join("")
+    : `<tr><td colspan="3">No active colors yet.</td></tr>`;
+
+  const sampleRows = active.length
+    ? active.map((item) => {
+        const frequency = drawCounts.get(item.label) || 0;
+        return `
+          <tr>
+            <td>${renderOutcomeLabel(item)}</td>
+            <td>${frequency}</td>
+            <td>${state.cubes.draws.length ? `${frequency}/${state.cubes.draws.length} (${percent(frequency / state.cubes.draws.length)})` : "0/0"}</td>
+          </tr>
+        `;
+      }).join("")
+    : `<tr><td colspan="3">Add active colors to start sampling.</td></tr>`;
+
+  return `
+    <div class="count-grid">
+      <div class="count-card">
+        <strong>${total}</strong>
+        <span>Bag Size</span>
+      </div>
+      <div class="count-card">
+        <strong>${state.cubes.draws.length}</strong>
+        <span>Cubes Pulled</span>
+      </div>
+      <div class="count-card">
+        <strong>${state.cubes.replacement ? "On" : "Off"}</strong>
+        <span>Replacement</span>
+      </div>
+    </div>
+
+    <div class="dual-table-grid">
+      <div class="output-panel inset-panel">
+        <div class="output-heading compact-heading">
+          <h3>Bag Distribution</h3>
+          <p>Lesson 2 inspired and editable</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Color</th>
+                <th>Count</th>
+                <th>Share</th>
+              </tr>
+            </thead>
+            <tbody>${bagRows}</tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="output-panel inset-panel">
+        <div class="output-heading compact-heading">
+          <h3>Sample Distribution</h3>
+          <p>${state.cubes.draws.length ? "Observed from pulls" : "Pull cubes to collect data"}</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Color</th>
+                <th>Frequency</th>
+                <th>Relative Frequency</th>
+              </tr>
+            </thead>
+            <tbody>${sampleRows}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    ${renderCubeBars(active, drawCounts, state.cubes.draws.length)}
+  `;
+}
+
+function renderCubeBars(active, drawCounts, totalDraws) {
+  if (!totalDraws) return makeEmpty("Pull cubes to compare the color frequencies in your sample.");
+
+  return `
+    <div class="cube-bar-grid">
+      ${active.map((item) => {
+        const count = drawCounts.get(item.label) || 0;
+        const value = totalDraws ? count / totalDraws : 0;
+        return `
+          <div class="ratio-item" style="border-left-color:${item.color}">
+            <strong>${count}</strong>
+            <span>${item.label}</span>
+            <div class="meter" aria-hidden="true"><span style="--value:${value * 100}%; background:${item.color}"></span></div>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
 }
 
 function bindEvents() {
@@ -894,6 +1523,7 @@ function bindEvents() {
     state.coin.view = event.target.value;
     renderCoin();
   });
+
   $("#poem-pick-one").addEventListener("click", () => pickPoemWords(1));
   $("#poem-clear").addEventListener("click", clearPoemWords);
 
@@ -933,7 +1563,7 @@ function bindEvents() {
     renderCustom();
   });
 
-  $$('input[name="dice-count"]').forEach((input) => {
+  $$("input[name='dice-count']").forEach((input) => {
     input.addEventListener("change", () => {
       const dice = state.experimental.dice;
       dice.count = getRadioValue("dice-count");
@@ -959,6 +1589,50 @@ function bindEvents() {
     $("#dice-last-result").textContent = "Dice changed; results cleared.";
     renderDiceVisuals();
     $("#dice-results").innerHTML = renderDiceResults();
+  });
+
+  $("#penny-pull-1").addEventListener("click", () => pullPennies(1));
+  $("#penny-pull-5").addEventListener("click", () => pullPennies(5));
+  $("#penny-pull-10").addEventListener("click", () => pullPennies(10));
+  $("#penny-reset").addEventListener("click", resetPennies);
+  $("#penny-show-tables").addEventListener("change", (event) => {
+    state.pennies.showTables = event.target.checked;
+    renderPennies();
+  });
+  $("#penny-show-milestones").addEventListener("change", (event) => {
+    state.pennies.showMilestones = event.target.checked;
+    renderPennies();
+  });
+
+  $("#cube-draw-1").addEventListener("click", () => drawCubes(1));
+  $("#cube-draw-5").addEventListener("click", () => drawCubes(5));
+  $("#cube-draw-10").addEventListener("click", () => drawCubes(10));
+  $("#cube-reset-results").addEventListener("click", clearCubeResults);
+  $("#cube-reset-setup").addEventListener("click", resetCubeSetup);
+  $("#cube-apply-total").addEventListener("click", scaleCubeCountsToTarget);
+  $("#cube-replacement-toggle").addEventListener("click", () => {
+    state.cubes.replacement = !state.cubes.replacement;
+    state.cubes.draws = [];
+    state.cubes.current = null;
+    rebuildCubeBag();
+    $("#cube-status").textContent = `Sampling will now happen ${state.cubes.replacement ? "with" : "without"} replacement. Results were cleared.`;
+    renderCubes();
+  });
+  $("#cube-color-editor").addEventListener("change", (event) => {
+    const enabledIndex = event.target.dataset.cubeEnabled;
+    const countIndex = event.target.dataset.cubeCount;
+    if (enabledIndex !== undefined) {
+      const enabled = event.target.checked;
+      const index = Number(enabledIndex);
+      updateCubeColor(index, {
+        enabled,
+        count: enabled ? Math.max(1, state.cubes.colors[index].count || 1) : 0,
+      });
+    }
+    if (countIndex !== undefined) {
+      const nextCount = clamp(Math.floor(Number(event.target.value) || 0), 0, 500);
+      updateCubeColor(Number(countIndex), { count: nextCount });
+    }
   });
 }
 
@@ -994,6 +1668,8 @@ function init() {
   renderPreset();
   renderCustom();
   renderDice();
+  renderPennies();
+  renderCubes();
 }
 
 init();

@@ -50,6 +50,8 @@
         <button class="tab-button active" type="button" data-activity="coin" aria-pressed="true">Coin Toss</button>
         <button class="tab-button" type="button" data-activity="experimental" aria-pressed="false">Experimental Probability</button>
         <button class="tab-button" type="button" data-activity="poem" aria-pressed="false">Poem Word Generator</button>
+        <button class="tab-button" type="button" data-activity="pennies" aria-pressed="false">Paper Pennies</button>
+        <button class="tab-button" type="button" data-activity="cubes" aria-pressed="false">Cube Bag</button>
       </nav>
 
       <section id="coin-activity" class="activity-section active" aria-labelledby="coin-title">
@@ -342,6 +344,132 @@
             <p id="poem-summary">0 words picked.</p>
           </div>
           <div id="poem-output"></div>
+        </div>
+      </section>
+
+      <section id="pennies-activity" class="activity-section" aria-labelledby="pennies-title">
+        <div class="section-heading">
+          <p class="kicker">Lesson 13 · Paper Pennies</p>
+          <h2 id="pennies-title">Pull pennies from the paper bag and watch the sample grow.</h2>
+        </div>
+
+        <div class="experiment-grid">
+          <div class="control-panel">
+            <h3>Sample the lesson bag</h3>
+            <p class="helper-text">This bag uses the 150 penny ages from the Lesson 13 Paper Pennies file. Larger ages mean older pennies.</p>
+            <div class="button-row">
+              <button id="penny-pull-1" class="primary-button" type="button">Pull 1 Penny</button>
+              <button id="penny-pull-5" class="quiet-button" type="button">+5 More</button>
+              <button id="penny-pull-10" class="quiet-button" type="button">+10 More</button>
+            </div>
+            <div class="button-row">
+              <button id="penny-reset" class="quiet-button" type="button">Reset Bag</button>
+            </div>
+
+            <label class="checkbox-row">
+              <input id="penny-show-tables" type="checkbox">
+              <span>Show frequency and relative frequency tables</span>
+            </label>
+            <label class="checkbox-row">
+              <input id="penny-show-milestones" type="checkbox">
+              <span>Show milestone dot plots at 10, 25, 50, and 75 pennies</span>
+            </label>
+
+            <p class="helper-text">The dot plot appears after 10 pulls and shows up to the first 75 pennies.</p>
+            <a class="pdf-link" href="lesson%2013/EM2_G7_M6_TC_L13_TE_PaperPennies_WCAG21_v5.pdf" target="_blank" rel="noopener">Open Paper Pennies PDF</a>
+            <a class="pdf-link" href="lesson%2013/EM2_G7_M6_TC_L13_TE_Lesson13_WCAG21_v6.pdf" target="_blank" rel="noopener">Open Lesson 13 Teacher Edition</a>
+          </div>
+
+          <div class="bag-stage" aria-live="polite">
+            <div class="bag-illustration penny-bag">
+              <div class="reveal-token penny-token" id="penny-reveal-token">?</div>
+              <div class="bag-body">
+                <div class="bag-fold"></div>
+              </div>
+            </div>
+            <p class="word-label">Latest Penny Age</p>
+            <p id="penny-current-age" class="word-display compact-display">Ready</p>
+            <p id="penny-status">Mix the bag and pull a penny to begin.</p>
+            <div class="mini-stats">
+              <span><strong id="penny-total-drawn">0</strong> pulled</span>
+              <span><strong id="penny-remaining">150</strong> left in bag</span>
+              <span><strong id="penny-current-max">0</strong> oldest pulled</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="output-panel">
+          <div class="output-heading">
+            <div>
+              <h3>Sample Summary</h3>
+              <p id="penny-summary">No pennies pulled yet.</p>
+            </div>
+          </div>
+          <div id="penny-output"></div>
+        </div>
+      </section>
+
+      <section id="cubes-activity" class="activity-section" aria-labelledby="cubes-title">
+        <div class="section-heading">
+          <p class="kicker">Lesson 2 · Cube Bag</p>
+          <h2 id="cubes-title">Build a colored cube bag, then pull random cubes to compare results.</h2>
+        </div>
+
+        <div class="experiment-grid">
+          <div class="control-panel">
+            <h3>Customize the bag</h3>
+            <p class="helper-text">Default setup is lesson-inspired: 50% black, 20% white, and 30% other colors. You can toggle colors, change counts, and switch replacement on or off.</p>
+
+            <label for="cube-target-total">Target Total Cubes</label>
+            <div class="button-row">
+              <input id="cube-target-total" type="number" min="1" max="500" step="1" value="20">
+              <button id="cube-apply-total" class="quiet-button" type="button">Scale to Total</button>
+            </div>
+
+            <div class="button-row">
+              <button id="cube-draw-1" class="primary-button" type="button">Pull 1 Cube</button>
+              <button id="cube-draw-5" class="quiet-button" type="button">+5 More</button>
+              <button id="cube-draw-10" class="quiet-button" type="button">+10 More</button>
+            </div>
+
+            <div class="button-row">
+              <button id="cube-replacement-toggle" class="quiet-button active" type="button" aria-pressed="true">With Replacement</button>
+              <button id="cube-reset-results" class="quiet-button" type="button">Clear Results</button>
+              <button id="cube-reset-setup" class="quiet-button" type="button">Reset Lesson Setup</button>
+            </div>
+
+            <div id="cube-color-editor" class="color-editor"></div>
+
+            <a class="pdf-link" href="Lesson%202/EM2_G7_M6_TA_L02_Classwork_WCAG21_v5.pdf" target="_blank" rel="noopener">Open Lesson 2 Classwork</a>
+            <a class="pdf-link" href="Lesson%202/EM2_G7_M6_TA_L02_TE_Lesson02_WCAG21_v5.pdf" target="_blank" rel="noopener">Open Lesson 2 Teacher Edition</a>
+          </div>
+
+          <div class="bag-stage" aria-live="polite">
+            <div class="bag-illustration cube-bag">
+              <div class="reveal-token cube-token" id="cube-reveal-token">?</div>
+              <div class="bag-body">
+                <div class="bag-fold"></div>
+              </div>
+            </div>
+            <p class="word-label">Latest Cube</p>
+            <p id="cube-current-color" class="word-display compact-display">Ready</p>
+            <p id="cube-status">Configure the bag, then pull a cube.</p>
+            <div class="mini-stats">
+              <span><strong id="cube-total-drawn">0</strong> pulled</span>
+              <span><strong id="cube-active-total">20</strong> cubes in bag</span>
+              <span><strong id="cube-remaining">20</strong> left if no replacement</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="output-panel">
+          <div class="output-heading">
+            <div>
+              <h3>Bag and Sample Results</h3>
+              <p id="cube-summary">The bag is ready.</p>
+            </div>
+          </div>
+          <div id="cube-output"></div>
         </div>
       </section>
     </main>

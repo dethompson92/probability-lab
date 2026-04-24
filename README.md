@@ -10,6 +10,8 @@ A static classroom app for exploring experimental probability with coin tosses, 
 - Dice: roll either 1 die or 2 dice, use the same preset and custom trial counts as the spinners, or edit the six face labels.
 - Results: switch between count and relative frequency, with relative frequencies shown only as fractions and theoretical probability hidden by default.
 - Poem Word Generator: pick random words from Paul Laurence Dunbar's "Sympathy" using the 186-word classroom copy, with the poem PDF linked in the app.
+- Paper Pennies (Lesson 13): pull random penny ages from the lesson's Paper Pennies population, reveal each pull with a paper-bag animation, and build a dot plot after 10 pulls (up to 75 shown).
+- Cube Bag (Lesson 2): run a random colored-cube pull experiment with editable color toggles/counts, configurable bag total, and replacement mode (default on).
 
 ## Run Locally
 
