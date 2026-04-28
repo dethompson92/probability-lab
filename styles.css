@@ -721,6 +721,16 @@ th {
   box-shadow: 0 14px 24px rgba(23, 33, 31, 0.14);
 }
 
+.skate-token {
+  width: 116px;
+  height: 116px;
+  border: 6px solid var(--accent-strong);
+  border-radius: 18px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  box-shadow: 0 12px 20px rgba(23, 33, 31, 0.15);
+}
+
 @keyframes pull-from-bag {
   0% {
     opacity: 0;
@@ -757,14 +767,15 @@ th {
   margin: 0;
 }
 
+/* Auto-fit dot plot – no horizontal scrolling */
 .dot-plot-shell {
-  min-width: max-content;
+  width: 100%;
 }
 
 .dot-plot {
   display: grid;
-  grid-template-columns: repeat(var(--dot-columns), minmax(18px, 1fr));
-  gap: 0.15rem;
+  grid-template-columns: repeat(var(--dot-columns), minmax(0, 1fr));
+  gap: var(--dot-col-gap, 0.15rem);
   align-items: end;
   padding: 0.75rem 0.25rem 0;
   border-bottom: 2px solid var(--ink);
@@ -774,6 +785,7 @@ th {
   display: grid;
   align-items: end;
   justify-items: center;
+  overflow: visible;
 }
 
 .dot-stack {
@@ -781,20 +793,20 @@ th {
   flex-direction: column-reverse;
   justify-content: flex-start;
   align-items: center;
-  gap: 0.2rem;
-  min-height: calc(var(--dot-max-stack) * 15px);
+  gap: var(--dot-gap, 0.2rem);
+  min-height: calc(var(--dot-max-stack) * var(--dot-row-height, 15px));
 }
 
 .dot {
-  width: 11px;
-  height: 11px;
+  width: var(--dot-size, 11px);
+  height: var(--dot-size, 11px);
   border-radius: 50%;
   background: var(--accent);
+  flex-shrink: 0;
 }
 
 .compact-dot {
-  width: 9px;
-  height: 9px;
+  /* kept for legacy; size is now driven by --dot-size */
 }
 
 .dot-label {
@@ -822,6 +834,10 @@ th {
 
 .snapshot-grid,
 .dual-table-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.skatepark-table-grid {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 

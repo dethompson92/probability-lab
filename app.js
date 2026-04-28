@@ -126,6 +126,99 @@ const POEM_LINES = [
 
 const POEM_WORDS = POEM_LINES.join(" ").split(/\s+/);
 
+// Lesson 14 – Skate Park Times (800 values from the PDF random-number table)
+// Row 00–79, columns 0–9; values are session times in minutes.
+const SKATE_PARK_TIMES = [
+  // rows 00–09
+  45, 58, 49, 78, 59, 36, 52, 39, 70, 51,
+  50, 45, 45, 66, 71, 55, 65, 33, 60, 51,
+  53, 83, 40, 51, 83, 57, 75, 38, 43, 77,
+  49, 49, 81, 57, 42, 36, 22, 66, 68, 52,
+  60, 67, 43, 60, 55, 63, 56, 44, 50, 58,
+  64, 41, 67, 73, 55, 69, 63, 46, 50, 65,
+  54, 58, 53, 55, 51, 74, 53, 55, 64, 16,
+  28, 48, 62, 24, 82, 51, 64, 45, 41, 47,
+  70, 50, 38, 16, 39, 83, 62, 50, 37, 58,
+  79, 62, 45, 48, 42, 51, 67, 68, 56, 78,
+  // rows 10–19
+  61, 56, 71, 55, 57, 77, 48, 65, 61, 62,
+  65, 40, 56, 47, 44, 51, 38, 68, 64, 40,
+  53, 22, 73, 62, 82, 78, 84, 50, 43, 43,
+  81, 42, 72, 49, 55, 65, 41, 92, 50, 60,
+  56, 44, 40, 70, 52, 47, 30,  9, 58, 53,
+  84, 64, 64, 34, 37, 69, 57, 75, 62, 67,
+  45, 58, 49, 78, 59, 36, 52, 39, 70, 51,
+  50, 45, 45, 66, 71, 55, 65, 33, 60, 51,
+  53, 83, 40, 51, 83, 57, 75, 38, 43, 77,
+  49, 49, 81, 57, 42, 36, 22, 66, 68, 52,
+  // rows 20–29
+  60, 67, 43, 60, 55, 63, 56, 44, 50, 58,
+  64, 41, 67, 73, 55, 69, 63, 46, 50, 65,
+  54, 58, 53, 55, 51, 74, 53, 55, 64, 16,
+  28, 48, 62, 24, 82, 51, 64, 45, 41, 47,
+  70, 50, 38, 16, 39, 83, 62, 50, 37, 58,
+  79, 62, 45, 48, 42, 51, 67, 68, 56, 78,
+  61, 56, 71, 55, 57, 77, 48, 65, 61, 62,
+  65, 40, 56, 47, 44, 51, 38, 68, 64, 40,
+  53, 22, 73, 62, 82, 78, 84, 50, 43, 43,
+  81, 42, 72, 49, 55, 65, 41, 92, 50, 60,
+  // rows 30–39
+  56, 44, 40, 70, 52, 47, 30,  9, 58, 53,
+  84, 64, 64, 34, 37, 69, 57, 75, 62, 67,
+  45, 58, 49, 78, 59, 36, 52, 39, 70, 51,
+  50, 45, 45, 66, 71, 55, 65, 33, 60, 51,
+  53, 83, 40, 51, 83, 57, 75, 38, 43, 77,
+  49, 49, 81, 57, 42, 36, 22, 66, 68, 52,
+  60, 67, 43, 60, 55, 63, 56, 44, 50, 58,
+  64, 41, 67, 73, 55, 69, 63, 46, 50, 65,
+  54, 58, 53, 55, 51, 74, 53, 55, 64, 16,
+  28, 48, 62, 24, 82, 51, 64, 45, 41, 47,
+  // rows 40–49
+  53, 70, 59, 62, 33, 31, 74, 44, 46, 68,
+  37, 51, 84, 47, 46, 33, 53, 54, 70, 74,
+  35, 45, 48, 45, 56, 60, 66, 60, 65, 57,
+  42, 81, 67, 64, 60, 79, 46, 48, 67, 56,
+  41, 21, 41, 58, 48, 38, 50, 53, 73, 38,
+  35, 28, 43, 43, 55, 39, 75, 45, 68, 36,
+  64, 31, 31, 40, 84, 79, 47, 63, 48, 46,
+  34, 36, 54, 61, 33, 16, 50, 60, 52, 55,
+  53, 52, 48, 47, 77, 37, 66, 51, 61, 64,
+  40, 44, 45, 22, 36, 64, 50, 49, 64, 39,
+  // rows 50–59
+  45, 69, 67, 33, 55, 61, 62, 38, 51, 43,
+  55, 39, 46, 56, 53, 50, 44, 42, 40, 60,
+  11, 36, 56, 69, 72, 73, 71, 48, 58, 52,
+  81, 47, 36, 54, 81, 59, 50, 42, 80, 69,
+  40, 43, 30, 54, 61, 13, 73, 65, 52, 40,
+  71, 78, 71, 61, 54, 79, 63, 47, 49, 73,
+  53, 70, 59, 62, 33, 31, 74, 44, 46, 68,
+  37, 51, 84, 47, 46, 33, 53, 54, 70, 74,
+  35, 45, 48, 45, 56, 60, 66, 60, 65, 57,
+  42, 81, 67, 64, 60, 79, 46, 48, 67, 56,
+  // rows 60–69
+  41, 21, 41, 58, 48, 38, 50, 53, 73, 38,
+  35, 28, 43, 43, 55, 39, 75, 45, 68, 36,
+  64, 31, 31, 40, 84, 79, 47, 63, 48, 46,
+  34, 36, 54, 61, 33, 16, 50, 60, 52, 55,
+  53, 52, 48, 47, 77, 37, 66, 51, 61, 64,
+  40, 44, 45, 22, 36, 64, 50, 49, 64, 39,
+  45, 69, 67, 33, 55, 61, 62, 38, 51, 43,
+  55, 39, 46, 56, 53, 50, 44, 42, 40, 60,
+  11, 36, 56, 69, 72, 73, 71, 48, 58, 52,
+  81, 47, 36, 54, 81, 59, 50, 42, 80, 69,
+  // rows 70–79
+  40, 43, 30, 54, 61, 13, 73, 65, 52, 40,
+  71, 78, 71, 61, 54, 79, 63, 47, 49, 73,
+  53, 70, 59, 62, 33, 31, 74, 44, 46, 68,
+  37, 51, 84, 47, 46, 33, 53, 54, 70, 74,
+  35, 45, 48, 45, 56, 60, 66, 60, 65, 57,
+  42, 81, 67, 64, 60, 79, 46, 48, 67, 56,
+  41, 21, 41, 58, 48, 38, 50, 53, 73, 38,
+  35, 28, 43, 43, 55, 39, 75, 45, 68, 36,
+  64, 31, 31, 40, 84, 79, 47, 63, 48, 46,
+  34, 36, 54, 61, 33, 16, 50, 60, 52, 55,
+];
+
 const PENNY_AGE_COUNTS = {
   0: 17,
   1: 8,
@@ -214,6 +307,11 @@ const state = {
     draws: [],
     current: null,
     bag: [],
+  },
+  skatepark: {
+    bag: shuffleArray(SKATE_PARK_TIMES),
+    pulled: [],
+    current: null,
   },
   experimental: {
     mode: "preset",
@@ -1136,15 +1234,26 @@ function renderDotPlot(values, options = {}) {
     compact = false,
   } = options;
 
+  const cols = max - min + 1;
+
+  // Compute dot size so the plot fits without horizontal scrolling.
+  // Estimate available width: ~1060 px for full-width panels, ~230 px for
+  // compact milestone cards (minmax-260 grid reduced by padding).
+  const availableWidth = compact ? 230 : 1060;
+  const rawSize = Math.floor(availableWidth / cols) - 2;
+  const dotSize = Math.max(4, Math.min(compact ? 9 : 13, rawSize));
+  const dotGap  = Math.max(1, Math.round(dotSize * 0.18));
+  const rowHeight = dotSize + dotGap;
+
   const counts = countBy(values);
   const maxStack = Math.max(1, ...Array.from(counts.values()), 1);
-  const columns = Array.from({ length: max - min + 1 }, (_, index) => {
+  const columns = Array.from({ length: cols }, (_, index) => {
     const value = min + index;
     const count = counts.get(value) || 0;
     return `
       <div class="dot-column">
         <div class="dot-stack">
-          ${Array.from({ length: count }, () => `<span class="dot ${compact ? "compact-dot" : ""}"></span>`).join("")}
+          ${Array.from({ length: count }, () => `<span class="dot"></span>`).join("")}
         </div>
         <div class="dot-label">${value % tickEvery === 0 ? value : ""}</div>
       </div>
@@ -1153,7 +1262,7 @@ function renderDotPlot(values, options = {}) {
 
   return `
     <div class="table-wrap">
-      <div class="dot-plot-shell ${compact ? "compact-plot-shell" : ""}" style="--dot-columns:${max - min + 1}; --dot-max-stack:${maxStack};">
+      <div class="dot-plot-shell" style="--dot-columns:${cols}; --dot-max-stack:${maxStack}; --dot-size:${dotSize}px; --dot-gap:${dotGap}px; --dot-row-height:${rowHeight}px;">
         <div class="dot-plot">${columns}</div>
         <p class="axis-label">${axisLabel}</p>
       </div>
@@ -1223,6 +1332,188 @@ function renderPennyTables(values) {
     </div>
   `;
 }
+
+// ─── Lesson 14: Skate Park Times ───────────────────────────────────────────
+
+function resetSkateParkBag() {
+  state.skatepark.bag = shuffleArray(SKATE_PARK_TIMES);
+}
+
+function pullSkateParkTimes(count) {
+  const available = state.skatepark.bag.length;
+  if (!available) {
+    $("#skatepark-status").textContent = "All 800 times have been pulled. Clear the data to start again.";
+    return;
+  }
+
+  const actual = Math.min(count, available);
+  const pulled = state.skatepark.bag.splice(0, actual);
+  state.skatepark.pulled.push(...pulled);
+  state.skatepark.current = pulled[pulled.length - 1];
+
+  $("#skatepark-status").textContent = actual < count
+    ? `The pool ran out; ${actual} ${actual === 1 ? "time was" : "times were"} pulled.`
+    : `Pulled ${actual} ${actual === 1 ? "time" : "times"}. Last: ${state.skatepark.current} min.`;
+  animateReveal("#skatepark-reveal-token");
+  renderSkatePark();
+}
+
+function clearSkateParkData() {
+  resetSkateParkBag();
+  state.skatepark.pulled = [];
+  state.skatepark.current = null;
+  $("#skatepark-status").textContent = "Data cleared. Ready to pull again.";
+  renderSkatePark();
+}
+
+function getSkateParkPullCount() {
+  const checked = document.querySelector("input[name='skatepark-pull-count']:checked");
+  if (!checked) return 1;
+  if (checked.value !== "custom") return Number(checked.value);
+  const input = $("#skatepark-custom-count");
+  const value = Math.min(Math.max(Math.floor(Number(input.value) || 1), 1), 800);
+  input.value = value;
+  return value;
+}
+
+function renderSkatePark() {
+  const { pulled, current, bag } = state.skatepark;
+  const total = pulled.length;
+  const remaining = bag.length;
+
+  $("#skatepark-total-pulled").textContent = total;
+  $("#skatepark-remaining").textContent = remaining;
+
+  const token = $("#skatepark-reveal-token");
+  token.textContent = current === null ? "?" : current;
+
+  $("#skatepark-current-time").textContent = current === null ? "Ready" : `${current} min`;
+  $("#skatepark-summary").textContent = total
+    ? `${total} ${total === 1 ? "time" : "times"} pulled so far.`
+    : "No times pulled yet.";
+
+  // Always render the output section (dot plot + tables)
+  $("#skatepark-output").innerHTML = renderSkateParkOutput(pulled, total);
+}
+
+function renderSkateParkOutput(pulled, total) {
+  const counts = countBy(pulled);
+  const sortedValues = Array.from(counts.keys()).sort((a, b) => a - b);
+
+  const dotPlotSection = `
+    <div class="chart-block">
+      <div class="output-heading compact-heading">
+        <h3>Dot Plot of Session Times</h3>
+        <p>${total} ${total === 1 ? "time" : "times"} pulled</p>
+      </div>
+      ${renderDotPlot(pulled, { min: 0, max: 95, tickEvery: 5, axisLabel: "Session Time (minutes)" })}
+    </div>
+  `;
+
+  // Pull log table – one row per draw
+  const pullLogRows = pulled.length
+    ? pulled.map((val, index) => `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${val}</td>
+        </tr>
+      `).join("")
+    : `<tr><td colspan="2" style="color:var(--muted)">Pull times to see the log.</td></tr>`;
+
+  const pullLogSection = `
+    <div class="output-panel inset-panel">
+      <div class="output-heading compact-heading">
+        <h3>Pull Log</h3>
+        <p>${total} ${total === 1 ? "entry" : "entries"}</p>
+      </div>
+      <div class="table-wrap" style="max-height:260px; overflow-y:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Pull #</th>
+              <th>Time (min)</th>
+            </tr>
+          </thead>
+          <tbody>${pullLogRows}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  // Frequency table
+  const freqRows = sortedValues.length
+    ? sortedValues.map((val) => `
+        <tr>
+          <td>${val}</td>
+          <td>${counts.get(val)}</td>
+        </tr>
+      `).join("")
+    : `<tr><td colspan="2" style="color:var(--muted)">Pull times to see frequencies.</td></tr>`;
+
+  const freqSection = `
+    <div class="output-panel inset-panel">
+      <div class="output-heading compact-heading">
+        <h3>Frequency Table</h3>
+        <p>${total} total</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Time (min)</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>${freqRows}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  // Relative frequency table
+  const relFreqRows = sortedValues.length
+    ? sortedValues.map((val) => {
+        const count = counts.get(val);
+        return `
+          <tr>
+            <td>${val}</td>
+            <td>${count}/${total} (${percent(count / total)})</td>
+          </tr>
+        `;
+      }).join("")
+    : `<tr><td colspan="2" style="color:var(--muted)">Pull times to see relative frequencies.</td></tr>`;
+
+  const relFreqSection = `
+    <div class="output-panel inset-panel">
+      <div class="output-heading compact-heading">
+        <h3>Relative Frequency Table</h3>
+        <p>Based on all pulls</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Time (min)</th>
+              <th>Relative Frequency</th>
+            </tr>
+          </thead>
+          <tbody>${relFreqRows}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  return `
+    ${dotPlotSection}
+    <div class="dual-table-grid skatepark-table-grid">
+      ${pullLogSection}
+      ${freqSection}
+      ${relFreqSection}
+    </div>
+  `;
+}
+
+// ───────────────────────────────────────────────────────────────────────────
 
 function resetCubeSetup() {
   state.cubes.colors = makeDefaultCubeConfig();
@@ -1604,6 +1895,15 @@ function bindEvents() {
     renderPennies();
   });
 
+  $("#skatepark-pull").addEventListener("click", () => pullSkateParkTimes(getSkateParkPullCount()));
+  $("#skatepark-clear").addEventListener("click", clearSkateParkData);
+  $$("input[name='skatepark-pull-count']").forEach((input) => {
+    input.addEventListener("change", () => {
+      const isCustom = input.value === "custom";
+      $("#skatepark-custom-label").style.display = isCustom ? "" : "none";
+    });
+  });
+
   $("#cube-draw-1").addEventListener("click", () => drawCubes(1));
   $("#cube-draw-5").addEventListener("click", () => drawCubes(5));
   $("#cube-draw-10").addEventListener("click", () => drawCubes(10));
@@ -1670,6 +1970,7 @@ function init() {
   renderDice();
   renderPennies();
   renderCubes();
+  renderSkatePark();
 }
 
 init();

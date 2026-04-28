@@ -52,6 +52,7 @@
         <button class="tab-button" type="button" data-activity="poem" aria-pressed="false">Poem Word Generator</button>
         <button class="tab-button" type="button" data-activity="pennies" aria-pressed="false">Paper Pennies</button>
         <button class="tab-button" type="button" data-activity="cubes" aria-pressed="false">Cube Bag</button>
+        <button class="tab-button" type="button" data-activity="skatepark" aria-pressed="false">Skate Park Times</button>
       </nav>
 
       <section id="coin-activity" class="activity-section active" aria-labelledby="coin-title">
@@ -377,7 +378,6 @@
 
             <p class="helper-text">The dot plot appears after 10 pulls and shows up to the first 75 pennies.</p>
             <a class="pdf-link" href="lesson%2013/EM2_G7_M6_TC_L13_TE_PaperPennies_WCAG21_v5.pdf" target="_blank" rel="noopener">Open Paper Pennies PDF</a>
-            <a class="pdf-link" href="lesson%2013/EM2_G7_M6_TC_L13_TE_Lesson13_WCAG21_v6.pdf" target="_blank" rel="noopener">Open Lesson 13 Teacher Edition</a>
           </div>
 
           <div class="bag-stage" aria-live="polite">
@@ -441,7 +441,6 @@
             <div id="cube-color-editor" class="color-editor"></div>
 
             <a class="pdf-link" href="Lesson%202/EM2_G7_M6_TA_L02_Classwork_WCAG21_v5.pdf" target="_blank" rel="noopener">Open Lesson 2 Classwork</a>
-            <a class="pdf-link" href="Lesson%202/EM2_G7_M6_TA_L02_TE_Lesson02_WCAG21_v5.pdf" target="_blank" rel="noopener">Open Lesson 2 Teacher Edition</a>
           </div>
 
           <div class="bag-stage" aria-live="polite">
@@ -470,6 +469,61 @@
             </div>
           </div>
           <div id="cube-output"></div>
+        </div>
+      </section>
+
+      <section id="skatepark-activity" class="activity-section" aria-labelledby="skatepark-title">
+        <div class="section-heading">
+          <p class="kicker">Lesson 14 · Skate Park Times</p>
+          <h2 id="skatepark-title">Pull random session times and watch the sample grow.</h2>
+        </div>
+
+        <div class="experiment-grid">
+          <div class="control-panel">
+            <h3>Sample from the data table</h3>
+            <p class="helper-text">This pool uses the 800 session times from the Lesson 14 Skate Park Times table. Times are in minutes.</p>
+
+            <fieldset class="segmented-field">
+              <legend>Times to Pull</legend>
+              <label><input type="radio" name="skatepark-pull-count" value="1" checked> 1</label>
+              <label><input type="radio" name="skatepark-pull-count" value="5"> 5</label>
+              <label><input type="radio" name="skatepark-pull-count" value="10"> 10</label>
+              <label><input type="radio" name="skatepark-pull-count" value="25"> 25</label>
+              <label><input type="radio" name="skatepark-pull-count" value="custom"> Custom</label>
+            </fieldset>
+            <label id="skatepark-custom-label" for="skatepark-custom-count" style="display:none;">Custom Count
+              <input id="skatepark-custom-count" type="number" min="1" max="800" step="1" value="25">
+            </label>
+
+            <button id="skatepark-pull" class="primary-button full-width" type="button">Pull Times</button>
+            <button id="skatepark-clear" class="quiet-button" type="button">Clear Data</button>
+          </div>
+
+          <div class="bag-stage" aria-live="polite">
+            <div class="bag-illustration penny-bag">
+              <div class="reveal-token skate-token" id="skatepark-reveal-token">?</div>
+              <div class="bag-body">
+                <div class="bag-fold"></div>
+              </div>
+            </div>
+            <p class="word-label">Latest Time</p>
+            <p id="skatepark-current-time" class="word-display compact-display">Ready</p>
+            <p id="skatepark-status">Pull times to begin.</p>
+            <div class="mini-stats">
+              <span><strong id="skatepark-total-pulled">0</strong> pulled</span>
+              <span><strong id="skatepark-remaining">800</strong> left in pool</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="output-panel">
+          <div class="output-heading">
+            <div>
+              <h3>Sample Results</h3>
+              <p id="skatepark-summary">No times pulled yet.</p>
+            </div>
+          </div>
+          <div id="skatepark-output"></div>
         </div>
       </section>
     </main>
